@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Detalhes da Tarefa')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Início</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/tasks}">Tarefas</a></li>
+                <li class="breadcrumb-item active" th:text="${task.title}">Detalhes</li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h4 class="mb-0" th:text="${task.title}"></h4>
+                <span th:class="${'badge fs-6 ' + (task.status.name() == 'DONE' ? 'bg-success' : task.status.name() == 'IN_PROGRESS' ? 'bg-warning text-dark' : 'bg-secondary')}"
+                      th:text="${task.status.label}"></span>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3 text-muted">Descrição</dt>
+                    <dd class="col-sm-9" th:text="${task.description ?: '—'}"></dd>
+
+                    <dt class="col-sm-3 text-muted">Status</dt>
+                    <dd class="col-sm-9" th:text="${task.status.label}"></dd>
+
+                    <dt class="col-sm-3 text-muted">Criado em</dt>
+                    <dd class="col-sm-9"
+                        th:text="${#temporals.format(task.createdAt, 'dd/MM/yyyy HH:mm')}"></dd>
+
+                    <dt class="col-sm-3 text-muted">Atualizado em</dt>
+                    <dd class="col-sm-9"
+                        th:text="${#temporals.format(task.updatedAt, 'dd/MM/yyyy HH:mm')}"></dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-white d-flex gap-2">
+                <a th:href="@{/tasks/{id}/edit(id=${task.id})}" class="btn btn-primary">
+                    <i class="bi bi-pencil me-1"></i>Editar
+                </a>
+                <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post"
+                      onsubmit="return confirm('Confirmar exclusão?')">
+                    <button type="submit" class="btn btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i>Excluir
+                    </button>
+                </form>
+                <a th:href="@{/tasks}" class="btn btn-outline-secondary ms-auto">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

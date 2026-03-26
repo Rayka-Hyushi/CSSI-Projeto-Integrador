@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Início')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="flex-grow-1">
+    <!-- Hero section -->
+    <div class="bg-primary text-white py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="bi bi-kanban-fill me-2"></i>Projeto Integrador
+            </h1>
+            <p class="lead mb-4">
+                Sistema de Gerenciamento de Tarefas – CSSI Sistemas para Internet
+            </p>
+            <a th:href="@{/tasks}" class="btn btn-light btn-lg me-2">
+                <i class="bi bi-list-task me-1"></i>Ver Tarefas
+            </a>
+            <a th:href="@{/tasks/new}" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-plus-circle me-1"></i>Nova Tarefa
+            </a>
+        </div>
+    </div>
+
+    <!-- Features section -->
+    <div class="container py-5">
+        <div class="row text-center g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                             style="width:64px;height:64px;">
+                            <i class="bi bi-plus-square fs-2 text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Criar Tarefas</h5>
+                        <p class="card-text text-muted">Adicione novas tarefas com título, descrição e status inicial.</p>
+                        <a th:href="@{/tasks/new}" class="btn btn-primary btn-sm">Criar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                             style="width:64px;height:64px;">
+                            <i class="bi bi-pencil-square fs-2 text-success"></i>
+                        </div>
+                        <h5 class="card-title">Gerenciar</h5>
+                        <p class="card-text text-muted">Edite, filtre e acompanhe o progresso das suas tarefas.</p>
+                        <a th:href="@{/tasks}" class="btn btn-success btn-sm">Gerenciar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="rounded-circle bg-info bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                             style="width:64px;height:64px;">
+                            <i class="bi bi-check2-all fs-2 text-info"></i>
+                        </div>
+                        <h5 class="card-title">Acompanhar</h5>
+                        <p class="card-text text-muted">Visualize status: Pendente, Em Andamento e Concluída.</p>
+                        <a th:href="@{/tasks(status='DONE')}" class="btn btn-info btn-sm text-white">Ver Concluídas</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
