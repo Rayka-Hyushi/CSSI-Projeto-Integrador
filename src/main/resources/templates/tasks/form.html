@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Início</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/tasks}">Tarefas</a></li>
+                <li class="breadcrumb-item active" th:text="${pageTitle}">Formulário</li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow-sm" style="max-width:640px; margin:auto;">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0" th:text="${pageTitle}"></h4>
+            </div>
+            <div class="card-body">
+                <!-- Create: POST /tasks  |  Edit: POST /tasks/{id} -->
+                <form th:action="${task.id == null} ? @{/tasks} : @{/tasks/{id}(id=${task.id})}"
+                      th:object="${task}"
+                      method="post"
+                      novalidate>
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-semibold">
+                            Título <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               id="title"
+                               th:field="*{title}"
+                               th:class="${#fields.hasErrors('title')} ? 'form-control is-invalid' : 'form-control'"
+                               placeholder="Título da tarefa"
+                               maxlength="150"/>
+                        <div class="invalid-feedback" th:errors="*{title}"></div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-semibold">Descrição</label>
+                        <textarea id="description"
+                                  th:field="*{description}"
+                                  th:class="${#fields.hasErrors('description')} ? 'form-control is-invalid' : 'form-control'"
+                                  rows="4"
+                                  placeholder="Descreva a tarefa (opcional)"
+                                  maxlength="1000"></textarea>
+                        <div class="invalid-feedback" th:errors="*{description}"></div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="mb-4">
+                        <label for="status" class="form-label fw-semibold">Status</label>
+                        <select id="status"
+                                th:field="*{status}"
+                                th:class="${#fields.hasErrors('status')} ? 'form-select is-invalid' : 'form-select'">
+                            <option th:each="s : ${statuses}"
+                                    th:value="${s}"
+                                    th:text="${s.label}">
+                            </option>
+                        </select>
+                        <div class="invalid-feedback" th:errors="*{status}"></div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-floppy me-1"></i>Salvar
+                        </button>
+                        <a th:href="@{/tasks}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-1"></i>Cancelar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
