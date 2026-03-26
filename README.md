@@ -8,7 +8,7 @@ Repositório para desenvolvimento da aplicação do Projeto Integrador com exten
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Linguagem | Java 17 |
+| Linguagem | Java 21 |
 | Framework | Spring Boot 3.2 |
 | Padrão | MVC (Model-View-Controller) |
 | View | Thymeleaf + Bootstrap 5 |
