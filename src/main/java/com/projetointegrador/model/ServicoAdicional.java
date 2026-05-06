@@ -3,6 +3,8 @@ package com.projetointegrador.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.List;
+
 @Entity
 @Table(name = "servicos_adicionais")
 public class ServicoAdicional {
@@ -15,9 +17,8 @@ public class ServicoAdicional {
     @Column(nullable = false, length = 150)
     private String nomeServico;
 
-    @ManyToOne
-    @JoinColumn(name = "id_prestador_servico", nullable = false)
-    private Prestador_Servico prestadorServico;
+    @ManyToMany(mappedBy = "servicos")
+    private List<Prestador> prestadores;
 
     // Getters e Setters
     public Long getId() {
@@ -36,11 +37,11 @@ public class ServicoAdicional {
         this.nomeServico = nomeServico;
     }
 
-    public Prestador_Servico getPrestadorServico() {
-        return prestadorServico;
+    public List<Prestador> getPrestadores() {
+        return prestadores;
     }
 
-    public void setPrestadorServico(Prestador_Servico prestadorServico) {
-        this.prestadorServico = prestadorServico;
+    public void setPrestadores(List<Prestador> prestadores) {
+        this.prestadores = prestadores;
     }
 }

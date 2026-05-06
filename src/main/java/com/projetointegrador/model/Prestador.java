@@ -19,8 +19,13 @@ public class Prestador extends Usuario {
     @OneToMany(mappedBy = "prestador", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Veiculo> veiculos;
 
-    @OneToMany(mappedBy = "prestador", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Prestador_Servico> servicos;
+    @ManyToMany(cascade = CascadeType.MERGE)
+    @JoinTable(
+            name = "prestador_servico", // Nome da tabela no seu ER
+            joinColumns = @JoinColumn(name = "id_prestador"),
+            inverseJoinColumns = @JoinColumn(name = "id_servico")
+    )
+    private List<ServicoAdicional> servicos;
 
     @ManyToMany(mappedBy = "prestadores")
     private List<Cliente> clientes;
@@ -58,11 +63,11 @@ public class Prestador extends Usuario {
         this.veiculos = veiculos;
     }
 
-    public List<Prestador_Servico> getServicos() {
+    public List<ServicoAdicional> getServicos() {
         return servicos;
     }
 
-    public void setServicos(List<Prestador_Servico> servicos) {
+    public void setServicos(List<ServicoAdicional> servicos) {
         this.servicos = servicos;
     }
 

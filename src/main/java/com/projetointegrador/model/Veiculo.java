@@ -20,8 +20,8 @@ public class Veiculo {
     @Column(length = 100)
     private String capacidadeCarga;
 
-    @Column(length = 100)
-    private String abertoFechado;
+    @Column(nullable = false)
+    private boolean isFechado;
 
     @ManyToOne
     @JoinColumn(name = "id_prestador", nullable = false)
@@ -60,12 +60,12 @@ public class Veiculo {
         this.capacidadeCarga = capacidadeCarga;
     }
 
-    public String getAbertoFechado() {
-        return abertoFechado;
+    public boolean isFechado() {
+        return isFechado;
     }
 
-    public void setAbertoFechado(String abertoFechado) {
-        this.abertoFechado = abertoFechado;
+    public void setFechado(boolean fechado) {
+        isFechado = fechado;
     }
 
     public Prestador getPrestador() {
