@@ -21,6 +21,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/login", "/css/**", "/js/**", "/h2-console/**")
                 .permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/cliente/**").hasRole("CLIENTE")
+                .requestMatchers("/prestador/**").hasRole("PRESTADOR")
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // Necessário para o H2 renderizar no navegador;

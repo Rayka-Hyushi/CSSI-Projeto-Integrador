@@ -15,14 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminController {
 
     @GetMapping("/solicitacoes")
-    public String solicitacoes(Model model) {
-        model.addAttribute("pageTitle", "Gerenciar Solicitações");
+    public String solicitacoes() {
         return "admin/solicitacoes";
-    }
-
-    @GetMapping("/usuarios")
-    public String usuarios(Model model) {
-        model.addAttribute("pageTitle", "Gerenciar Usuários");
-        return "admin/usuarios";
     }
 }

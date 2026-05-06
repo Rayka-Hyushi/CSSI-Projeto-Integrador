@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <!-- ===== HEAD fragment ===== -->
 <head th:fragment="head(pageTitle)">
@@ -35,16 +35,13 @@
                         <i class="bi bi-house me-1"></i>Início
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/tasks}">
-                        <i class="bi bi-list-task me-1"></i>Tarefas
-                    </a>
+                <li class="nav-item" sec:authorize="hasRole('ROLE_CLIENTE')">
+                    <a class="nav-link" th:href="@{/cliente/pedidos}">Meus Pedidos</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/tasks/new}">
-                        <i class="bi bi-plus-circle me-1"></i>Nova Tarefa
-                    </a>
+                <li class="nav-item" sec:authorize="hasRole('ROLE_PRESTADOR')">
+                    <a class="nav-link" th:href="@{/prestador/servicos}">Meus Fretes</a>
                 </li>
+
             </ul>
         </div>
     </div>
