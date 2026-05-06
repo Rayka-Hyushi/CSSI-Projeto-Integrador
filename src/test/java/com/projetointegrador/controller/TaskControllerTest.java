@@ -1,8 +1,7 @@
 package com.projetointegrador.controller;
 
-import com.projetointegrador.model.Task;
-import com.projetointegrador.model.TaskStatus;
-import com.projetointegrador.service.TaskService;
+import com.projetointegrador.model.Usuario;
+import com.projetointegrador.model.TipoUsuario;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -17,7 +16,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(TaskController.class)
+@WebMvcTest(ClientController.class)
 class TaskControllerTest {
 
     @Autowired
@@ -26,12 +25,12 @@ class TaskControllerTest {
     @MockBean
     private TaskService taskService;
 
-    private Task buildTask(Long id) {
-        Task t = new Task();
+    private Usuario buildTask(Long id) {
+        Usuario t = new Usuario();
         t.setId(id);
         t.setTitle("Tarefa " + id);
         t.setDescription("Desc " + id);
-        t.setStatus(TaskStatus.PENDING);
+        t.setStatus(TipoUsuario.PENDING);
         t.setCreatedAt(LocalDateTime.now());
         t.setUpdatedAt(LocalDateTime.now());
         return t;
@@ -49,12 +48,12 @@ class TaskControllerTest {
 
     @Test
     void list_withStatusFilter_shouldFilterTasks() throws Exception {
-        when(taskService.findByStatus(TaskStatus.PENDING)).thenReturn(List.of(buildTask(1L)));
+        when(taskService.findByStatus(TipoUsuario.PENDING)).thenReturn(List.of(buildTask(1L)));
 
         mockMvc.perform(get("/tasks").param("status", "PENDING"))
                .andExpect(status().isOk())
                .andExpect(view().name("tasks/list"))
-               .andExpect(model().attribute("selectedStatus", TaskStatus.PENDING));
+               .andExpect(model().attribute("selectedStatus", TipoUsuario.PENDING));
     }
 
     @Test
@@ -87,8 +86,8 @@ class TaskControllerTest {
 
     @Test
     void create_withValidData_shouldRedirect() throws Exception {
-        Task saved = buildTask(1L);
-        when(taskService.save(any(Task.class))).thenReturn(saved);
+        Usuario saved = buildTask(1L);
+        when(taskService.save(any(Usuario.class))).thenReturn(saved);
 
         mockMvc.perform(post("/tasks")
                        .param("title", "Nova Tarefa")
@@ -119,8 +118,8 @@ class TaskControllerTest {
 
     @Test
     void update_withValidData_shouldRedirect() throws Exception {
-        Task updated = buildTask(1L);
-        when(taskService.update(eq(1L), any(Task.class))).thenReturn(updated);
+        Usuario updated = buildTask(1L);
+        when(taskService.update(eq(1L), any(Usuario.class))).thenReturn(updated);
 
         mockMvc.perform(post("/tasks/1")
                        .param("title", "Atualizada")

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<head th:replace="~{modelos/layout :: head(${pageTitle})}"></head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-<nav th:replace="~{fragments/layout :: navbar}"></nav>
+<nav th:replace="~{modelos/layout :: navbar}"></nav>
 
 <main class="flex-grow-1 py-4">
     <div class="container">
@@ -84,7 +84,7 @@
     </div>
 </main>
 
-<footer th:replace="~{fragments/layout :: footer}"></footer>
-<div th:replace="~{fragments/layout :: scripts}"></div>
+<footer th:replace="~{modelos/layout :: footer}"></footer>
+<div th:replace="~{modelos/layout :: scripts}"></div>
 </body>
 </html>

@@ -1,8 +1,7 @@
 package com.projetointegrador.service;
 
-import com.projetointegrador.model.Task;
-import com.projetointegrador.model.TaskStatus;
-import com.projetointegrador.repository.TaskRepository;
+import com.projetointegrador.model.Usuario;
+import com.projetointegrador.model.TipoUsuario;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,22 +25,22 @@ class TaskServiceTest {
     @InjectMocks
     private TaskService taskService;
 
-    private Task sampleTask;
+    private Usuario sampleTask;
 
     @BeforeEach
     void setUp() {
-        sampleTask = new Task();
+        sampleTask = new Usuario();
         sampleTask.setId(1L);
         sampleTask.setTitle("Tarefa de Teste");
         sampleTask.setDescription("Descrição de teste");
-        sampleTask.setStatus(TaskStatus.PENDING);
+        sampleTask.setStatus(TipoUsuario.PENDING);
     }
 
     @Test
     void findAll_shouldReturnAllTasks() {
         when(taskRepository.findAll()).thenReturn(List.of(sampleTask));
 
-        List<Task> result = taskService.findAll();
+        List<Usuario> result = taskService.findAll();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getTitle()).isEqualTo("Tarefa de Teste");
@@ -52,7 +51,7 @@ class TaskServiceTest {
     void findById_shouldReturnTask_whenFound() {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(sampleTask));
 
-        Task result = taskService.findById(1L);
+        Usuario result = taskService.findById(1L);
 
         assertThat(result.getId()).isEqualTo(1L);
     }
@@ -70,7 +69,7 @@ class TaskServiceTest {
     void save_shouldPersistTask() {
         when(taskRepository.save(sampleTask)).thenReturn(sampleTask);
 
-        Task result = taskService.save(sampleTask);
+        Usuario result = taskService.save(sampleTask);
 
         assertThat(result.getTitle()).isEqualTo("Tarefa de Teste");
         verify(taskRepository).save(sampleTask);
@@ -78,18 +77,18 @@ class TaskServiceTest {
 
     @Test
     void update_shouldModifyExistingTask() {
-        Task updated = new Task();
+        Usuario updated = new Usuario();
         updated.setTitle("Título Atualizado");
         updated.setDescription("Desc Atualizada");
-        updated.setStatus(TaskStatus.DONE);
+        updated.setStatus(TipoUsuario.DONE);
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(sampleTask));
         when(taskRepository.save(sampleTask)).thenReturn(sampleTask);
 
-        Task result = taskService.update(1L, updated);
+        Usuario result = taskService.update(1L, updated);
 
         assertThat(result.getTitle()).isEqualTo("Título Atualizado");
-        assertThat(result.getStatus()).isEqualTo(TaskStatus.DONE);
+        assertThat(result.getStatus()).isEqualTo(TipoUsuario.DONE);
     }
 
     @Test
@@ -103,19 +102,19 @@ class TaskServiceTest {
 
     @Test
     void findByStatus_shouldFilterCorrectly() {
-        when(taskRepository.findByStatus(TaskStatus.PENDING)).thenReturn(List.of(sampleTask));
+        when(taskRepository.findByStatus(TipoUsuario.PENDING)).thenReturn(List.of(sampleTask));
 
-        List<Task> result = taskService.findByStatus(TaskStatus.PENDING);
+        List<Usuario> result = taskService.findByStatus(TipoUsuario.PENDING);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getStatus()).isEqualTo(TaskStatus.PENDING);
+        assertThat(result.get(0).getStatus()).isEqualTo(TipoUsuario.PENDING);
     }
 
     @Test
     void search_shouldReturnMatchingTasks() {
         when(taskRepository.findByTitleContainingIgnoreCase("teste")).thenReturn(List.of(sampleTask));
 
-        List<Task> result = taskService.search("teste");
+        List<Usuario> result = taskService.search("teste");
 
         assertThat(result).hasSize(1);
     }
