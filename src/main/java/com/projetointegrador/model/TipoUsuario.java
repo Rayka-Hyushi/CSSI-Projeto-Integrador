@@ -5,5 +5,5 @@ package com.projetointegrador.model;
  * Usado para controle de acesso e definição de permissões.
  */
 public enum TipoUsuario {
-    ADMIN, CLIENTE, PRESTADOR
+    ROLE_ADMIN, ROLE_CLIENTE, ROLE_PRESTADOR
 }

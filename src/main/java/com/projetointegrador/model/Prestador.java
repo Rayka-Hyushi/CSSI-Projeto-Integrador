@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 
 import java.util.List;
 
+/**
+ * Modelo de entidade para representar um prestador no sistema.
+ * Esta classe é mapeada para a tabela "prestadores" no banco de dados.
+ */
 @Entity
 @Table(name = "prestadores")
 @PrimaryKeyJoinColumn(name = "id_usuario")

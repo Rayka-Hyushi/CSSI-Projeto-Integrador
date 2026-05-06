@@ -1,5 +1,8 @@
 package com.projetointegrador.model;
 
+/**
+ * Enum representando os tipos de veículos.
+ */
 public enum TipoVeiculo {
     FIORINO("Fiorino"),
     VAN("Van"),

@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
+/**
+ * Modelo de entidade para representar um bairro no sistema.
+ * Esta classe é mapeada para a tabela "bairros" no banco de dados.
+ */
 @Entity
 @Table(name = "bairros")
 public class Bairro {

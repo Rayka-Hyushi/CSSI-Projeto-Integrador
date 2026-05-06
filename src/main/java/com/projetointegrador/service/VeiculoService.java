@@ -31,7 +31,7 @@ public class VeiculoService {
             veiculo.setPlaca(veiculoAtualizado.getPlaca());
             veiculo.setTipo(veiculoAtualizado.getTipo());
             veiculo.setCapacidadeCarga(veiculoAtualizado.getCapacidadeCarga());
-            veiculo.setAbertoFechado(veiculoAtualizado.getAbertoFechado());
+            veiculo.setFechado(veiculoAtualizado.isFechado());
             return veiculoRepository.save(veiculo);
         }).orElseThrow(() -> new RuntimeException("Veículo não encontrado"));
     }

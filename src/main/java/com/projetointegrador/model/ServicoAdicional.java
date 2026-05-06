@@ -5,6 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
+/**
+ * Modelo de entidade para representar um serviço adicional no sistema.
+ * Esta classe é mapeada para a tabela "servicos_adicionais" no banco de dados.
+ */
 @Entity
 @Table(name = "servicos_adicionais")
 public class ServicoAdicional {

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "usuarios")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
 
     @Id
@@ -33,7 +34,7 @@ public class Usuario {
     private String senha;
 
     @NotBlank(message = "Whatsapp é obrigatório")
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 17)
     private String whatsapp;
 
     @NotBlank(message = "CPF é obrigatório")

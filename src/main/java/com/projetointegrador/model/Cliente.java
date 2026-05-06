@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 
 import java.util.List;
 
+/**
+ * Modelo de entidade para representar um cliente no sistema.
+ * Esta classe é mapeada para a tabela "clientes" no banco de dados.
+ */
 @Entity
 @Table(name = "clientes")
 @PrimaryKeyJoinColumn(name = "id_usuario")

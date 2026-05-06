@@ -26,8 +26,8 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    public Optional<Usuario> buscarPorNome(String nome) {
-        return usuarioRepository.findByNomeCompleto(nome);
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
     }
 
     public Usuario salvar(Usuario usuario) {

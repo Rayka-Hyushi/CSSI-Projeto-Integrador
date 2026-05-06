@@ -2,6 +2,10 @@ package com.projetointegrador.model;
 
 import jakarta.persistence.*;
 
+/**
+ * Modelo de entidade para representar um veículo no sistema.
+ * Esta classe é mapeada para a tabela "veículos" no banco de dados.
+ */
 @Entity
 @Table(name = "veiculos")
 public class Veiculo {
