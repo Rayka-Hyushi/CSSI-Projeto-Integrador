@@ -17,26 +17,26 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/css/**", "/js/**", "/h2-console/**")
-                .permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cliente/**").hasRole("CLIENTE")
-                .requestMatchers("/prestador/**").hasRole("PRESTADOR")
-                .anyRequest().authenticated()
-            )
-            .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // Necessário para o H2 renderizar no navegador;
-            .formLogin(form -> form
-                .loginPage("/")
-                .loginProcessingUrl("/login")
-                .successHandler(customSuccessHandler())
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutSuccessUrl("/?logout")
-                .permitAll()
-            );
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/login", "/cadastro", "/css/**", "/js/**", "/h2-console/**", "/uploads/**")
+                        .permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/cliente/**").hasRole("CLIENTE")
+                        .requestMatchers("/prestador/**").hasRole("PRESTADOR")
+                        .anyRequest().authenticated()
+                )
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // Necessário para o H2 renderizar no navegador;
+                .formLogin(form -> form
+                        .loginPage("/")
+                        .loginProcessingUrl("/login")
+                        .successHandler(customSuccessHandler())
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/?logout")
+                        .permitAll()
+                );
 
         return http.build();
     }

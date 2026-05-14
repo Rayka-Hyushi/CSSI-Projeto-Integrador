@@ -22,7 +22,7 @@ public class Veiculo {
     private TipoVeiculo tipo;
 
     @Column(length = 100)
-    private String capacidadeCarga;
+    private double capacidadeCarga;
 
     @Column(nullable = false)
     private boolean isFechado;
@@ -56,11 +56,11 @@ public class Veiculo {
         this.tipo = tipo;
     }
 
-    public String getCapacidadeCarga() {
+    public double getCapacidadeCarga() {
         return capacidadeCarga;
     }
 
-    public void setCapacidadeCarga(String capacidadeCarga) {
+    public void setCapacidadeCarga(double capacidadeCarga) {
         this.capacidadeCarga = capacidadeCarga;
     }
 

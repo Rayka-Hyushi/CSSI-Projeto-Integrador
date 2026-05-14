@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/navbar :: head('Meu Perfil')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<div class="container my-5 flex-grow-1">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white text-center py-4">
+                    <h3 class="card-title fw-bold mb-0">Meu Perfil</h3>
+                    <p class="text-muted mb-0">Gerencie suas informações</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Foto Preview -->
+                    <div class="text-center mb-4">
+                        <img th:src="${usuario != null && usuario.profilePhotoUrl != null && !usuario.profilePhotoUrl.isEmpty() ? usuario.profilePhotoUrl : (usuario != null && usuario.nomeCompleto != null ? 'https://ui-avatars.com/api/?name=' + usuario.nomeCompleto + '&background=random' : 'https://ui-avatars.com/api/?name=User&background=random')}"
+                             th:data-fallback="'https://ui-avatars.com/api/?name=' + (${usuario != null && usuario.nomeCompleto != null ? usuario.nomeCompleto : 'User'}) + '&background=random'"
+                             onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
+                             class="rounded-circle shadow-sm"
+                             width="120"
+                             height="120"
+                             style="object-fit: cover;"
+                             alt="Foto de perfil grande">
+                    </div>
+
+                    <!-- Mensagens de Alerta -->
+                    <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+                    <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+
+                    <!-- Form de Foto (Todos podem alterar a própria foto) -->
+                    <form th:action="@{/perfil/foto}" method="post" enctype="multipart/form-data" class="mb-5">
+                        <div class="mb-3">
+                            <label for="foto" class="form-label fw-bold">Alterar foto de perfil</label>
+                            <div class="input-group">
+                                <input class="form-control" type="file" id="foto" name="foto" accept="image/*" required>
+                                <button class="btn btn-primary" type="submit">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <hr>
+
+                    <!-- Seções que dependem do Role do Usuário -->
+                    <div sec:authorize="hasRole('ADMIN')">
+                        <h5 class="fw-bold mb-3">Informações Pessoais (Administrador)</h5>
+                        <form th:action="@{/perfil/dados}" method="post">
+                            <div class="mb-3">
+                                <label for="nomeCompleto" class="form-label">Nome Completo</label>
+                                <input type="text" class="form-control" id="nomeCompleto" name="nomeCompleto" th:value="${usuario.nomeCompleto}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cpf" class="form-label">CPF</label>
+                                <input type="text" class="form-control" id="cpf" name="cpf" th:value="${usuario.cpf}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="whatsapp" class="form-label">WhatsApp</label>
+                                <input type="text" class="form-control" id="whatsapp" name="whatsapp" th:value="${usuario.whatsapp}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-mail</label>
+                                <input type="email" class="form-control" id="email" name="email" th:value="${usuario.email}" required>
+                            </div>
+                            <!-- Alterar Senha Admin opcional -->
+                            <div class="mb-3">
+                                <label for="senhaNovaAdmin" class="form-label">Nova Senha (deixe em branco para não alterar)</label>
+                                <input type="password" class="form-control" id="senhaNovaAdmin" name="senha">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Atualizar Dados</button>
+                        </form>
+                    </div>
+
+                    <div sec:authorize="!hasRole('ADMIN')">
+                        <h5 class="fw-bold mb-3">Minhas Informações</h5>
+                        <p class="text-muted small">
+                            Seus dados não podem ser alterados diretamente por você por motivos de segurança.
+                        </p>
+
+                        <!-- Dados em Read-Only -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nome Completo</label>
+                            <p class="form-control bg-light" th:text="${usuario.nomeCompleto}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">CPF</label>
+                            <p class="form-control bg-light" th:text="${usuario.cpf}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">WhatsApp</label>
+                            <p class="form-control bg-light" th:text="${usuario.whatsapp}"></p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">E-mail</label>
+                            <p class="form-control bg-light" th:text="${usuario.email}"></p>
+                        </div>
+
+                        <!-- Formulário Alterar Senha Livre -->
+                        <hr class="my-4">
+                        <h5 class="fw-bold mb-3">Alterar minha senha</h5>
+                        <form th:action="@{/perfil/dados}" method="post">
+                            <div class="mb-3">
+                                <label for="senhaNova" class="form-label">Nova Senha</label>
+                                <input type="password" class="form-control" id="senhaNova" name="senha" required minlength="6">
+                            </div>
+                            <!-- Envia os dados atuais como hidden para reutilizar o endpoint ou o controller cuida -->
+                            <input type="hidden" name="nomeCompleto" th:value="${usuario.nomeCompleto}">
+                            <input type="hidden" name="email" th:value="${usuario.email}">
+                            <input type="hidden" name="whatsapp" th:value="${usuario.whatsapp}">
+                            <input type="hidden" name="cpf" th:value="${usuario.cpf}">
+                            <button type="submit" class="btn btn-primary w-100">Atualizar Senha</button>
+                        </form>
+
+                        <div class="mt-4">
+                            <button class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#solicitacaoModal">
+                                <i class="bi bi-headset me-2"></i> Solicitar Alteração de Dados
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Solicitação -->
+<div sec:authorize="!hasRole('ADMIN')" class="modal fade" id="solicitacaoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form th:action="@{/perfil/solicitacao}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Abrir Solicitação (Suporte/Atualização)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="assunto" class="form-label">Assunto</label>
+                        <select class="form-select" id="assunto" name="assunto">
+                            <option value="ALTERACAO_DADOS">Alteração de Cadastro</option>
+                            <option value="SUPORTE">Suporte Geral</option>
+                            <option value="OUTRO">Outro</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="mensagem" class="form-label">O que você precisa?</label>
+                        <textarea class="form-control" id="mensagem" name="mensagem" rows="4"
+                                  placeholder="Descreva o que deseja alterar, ou seu problema de suporte..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Solicitação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+</html>

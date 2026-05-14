@@ -13,6 +13,10 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name = "id_usuario")
 public class Cliente extends Usuario {
 
+    @Column(name = "status_aprovacao")
+    @Enumerated(EnumType.STRING)
+    private StatusAprovacao statusAprovacao = StatusAprovacao.PENDENTE;
+
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "favoritos",
@@ -28,5 +32,13 @@ public class Cliente extends Usuario {
 
     public void setPrestadores(List<Prestador> prestadores) {
         this.prestadores = prestadores;
+    }
+
+    public StatusAprovacao getStatusAprovacao() {
+        return statusAprovacao;
+    }
+
+    public void setStatusAprovacao(StatusAprovacao statusAprovacao) {
+        this.statusAprovacao = statusAprovacao;
     }
 }
