@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{modelos/compartilhados :: head('Login')}"></head>
-<body class="d-flex flex-column min-vh-100 bg-light">
+<head th:replace="~{fragments/navbar :: head('Login')}"></head>
 
-<nav th:replace="~{modelos/compartilhados :: navbar}"></nav>
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
 <main class="flex-grow-1 d-flex align-items-center justify-content-center">
     <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
@@ -35,7 +35,7 @@
     </div>
 </main>
 
-<footer th:replace="~{modelos/compartilhados :: footer}"></footer>
-<div th:replace="~{modelos/compartilhados :: scripts}"></div>
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
 </body>
 </html>

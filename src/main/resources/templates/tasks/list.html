@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{modelos/compartilhados :: head('Tarefas')}"></head>
+<head th:replace="~{fragments/navbar :: head('Tarefas')}"></head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-<nav th:replace="~{modelos/compartilhados :: navbar}"></nav>
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
 <main class="flex-grow-1 py-4">
     <div class="container">
@@ -122,7 +122,7 @@
     </div>
 </main>
 
-<footer th:replace="~{modelos/compartilhados :: footer}"></footer>
-<div th:replace="~{modelos/compartilhados :: scripts}"></div>
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
 </body>
 </html>
