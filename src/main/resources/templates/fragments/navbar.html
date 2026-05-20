@@ -86,8 +86,12 @@
         <!-- FOTO PERFIL -->
         <div class="dropdown" sec:authorize="isAuthenticated()">
 
-            <button class="btn btn- dropdown-toggle d-flex align-items-center gap-2"
+            <button class="dropdown-toggle d-flex align-items-center gap-2 text-white text-decoration-none"
+                    style="background: none; border: none; cursor: pointer;"
                     type="button"
+                    id="navbarDropdown"
+                    aria-expanded="false"
+                    aria-haspopup="true"
                     data-bs-toggle="dropdown">
 
                 <img th:src="${usuario != null && usuario.profilePhotoUrl != null && !usuario.profilePhotoUrl.isEmpty() ? usuario.profilePhotoUrl : (usuario != null && usuario.nomeCompleto != null ? 'https://ui-avatars.com/api/?name=' + usuario.nomeCompleto + '&background=random' : 'https://ui-avatars.com/api/?name=User&background=random')}"
@@ -103,7 +107,7 @@
 
             </button>
 
-            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="navbarDropdown">
 
                 <!-- PERFIL -->
                 <li>

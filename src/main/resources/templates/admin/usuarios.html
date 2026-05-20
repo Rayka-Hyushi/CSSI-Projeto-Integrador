@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<!-- Reutiliza o fragmento 'head' do seu arquivo modelos/navbar.html -->
+<head th:replace="~{fragments/navbar :: head('Painel de Controle')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<!-- Reutiliza sua navbar padrão -->
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+        <!-- Cabeçalho da Página -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="bi bi-people me-2 text-primary"></i>Gerenciamento de Usuários
+            </h2>
+            <span class="text-muted" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
+        </div>
+
+        <!-- Card de Resumo -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
+                            <i class="bi bi-people fs-3 text-primary"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="card-subtitle mb-1 text-muted">Total de Usuários Cadastrados</h6>
+                            <h4 class="card-title mb-0 fw-bold" th:text="${totalUsuarios}">28</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${sucesso}" class="alert alert-success mt-2 mb-4" th:text="${sucesso}"></div>
+
+        <!-- Tabela de Usuários -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Lista de Usuários Cadastrados</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>WhatsApp</th>
+                            <th>CPF</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th class="text-end">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <tr th:if="${#lists.isEmpty(usuarios)}">
+                            <td colspan="7" class="text-center text-muted py-4">Nenhum usuário cadastrado.</td>
+                        </tr>
+
+                        <tr th:each="user : ${usuarios}">
+                            <td><strong th:text="${user.nomeCompleto}">Nome</strong></td>
+                            <td class="text-muted small" th:text="${user.email}">email@teste.com</td>
+                            <td class="text-muted small" th:text="${user.whatsapp}">(00) 0000-0000</td>
+                            <td class="text-muted small" th:text="${user.cpf}">000.000.000-00</td>
+                            <td><span class="badge bg-info" th:text="${user.tipoUsuario.name()}">CLIENTE</span></td>
+                            <td>
+                                <span class="badge bg-success" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">Ativo</span>
+                                <span class="badge bg-danger" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">Inativo</span>
+                                <span class="badge bg-warning" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">Pendente</span>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" th:data-bs-target="'#detalheModal' + ${user.id}">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modais de Edição dinâmicos -->
+<div th:each="user : ${usuarios}" class="modal fade" th:id="'detalheModal' + ${user.id}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Dados do Usuário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/usuarios/editar}" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Foto do Perfil (se existir) -->
+                        <div class="col-12 text-center mb-3" th:if="${user.profilePhotoUrl}">
+                            <img th:src="${user.profilePhotoUrl}" alt="Foto de Perfil" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                        </div>
+
+                        <!-- ID (Hidden) -->
+                        <input type="hidden" name="id" th:value="${user.id}">
+
+                        <!-- Coluna Esquerda -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="nomeCompleto" class="form-label"><strong>Nome Completo</strong></label>
+                                <input type="text" class="form-control" id="nomeCompleto" name="nomeCompleto" th:value="${user.nomeCompleto}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label"><strong>E-mail</strong></label>
+                                <input type="email" class="form-control" id="email" name="email" th:value="${user.email}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="whatsapp" class="form-label"><strong>WhatsApp</strong></label>
+                                <input type="text" class="form-control" id="whatsapp" name="whatsapp" th:value="${user.whatsapp}" required>
+                            </div>
+                        </div>
+
+                        <!-- Coluna Direita -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cpf" class="form-label"><strong>CPF</strong></label>
+                                <input type="text" class="form-control" id="cpf" name="cpf" th:value="${user.cpf}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="tipoUsuario" class="form-label"><strong>Tipo de Usuário</strong></label>
+                                <input type="text" class="form-control" id="tipoUsuario" th:value="${user.tipoUsuario.name()}" disabled>
+                            </div>
+                            <div class="mb-3">
+                                <label for="dataCadastro" class="form-label"><strong>Data de Cadastro</strong></label>
+                                <input type="text" class="form-control" id="dataCadastro" th:value="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}" disabled>
+                            </div>
+                            <div class="mb-3" th:if="${user.statusAprovacao != null}">
+                                <label for="statusAprovacao" class="form-label"><strong>Status de Aprovação</strong></label>
+                                <select class="form-select" id="statusAprovacao" name="statusAprovacao">
+                                    <option value="PENDENTE" th:selected="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">Pendente</option>
+                                    <option value="APROVADO" th:selected="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">Aprovado</option>
+                                    <option value="REJEITADO" th:selected="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">Rejeitado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Status do Usuário -->
+                        <div class="col-12">
+                            <div class="alert alert-success" role="alert" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <strong>Usuário ativo e aprovado no sistema</strong>
+                            </div>
+                            <div class="alert alert-danger" role="alert" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">
+                                <i class="bi bi-x-circle me-2"></i>
+                                <strong>Usuário inativo</strong> - Cadastro foi recusado
+                            </div>
+                            <div class="alert alert-warning" role="alert" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">
+                                <i class="bi bi-exclamation-circle me-2"></i>
+                                <strong>Cadastro pendente</strong> - Aguardando aprovação
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <p class="text-muted small mb-0"><i>* Alterações em tipos de usuário devem ser feitas no banco de dados</i></p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
+                </div>
+            </form>
+            <!-- Formulário separado para ativar/desativar -->
+            <form th:action="@{/admin/usuarios/atualizar-status}" method="post" class="d-inline">
+                <div class="modal-footer" style="border-top: 0; padding-top: 0;">
+                    <input type="hidden" name="id" th:value="${user.id}">
+                    <!-- Botão condicional baseado no statusAprovacao -->
+                    <button type="submit" class="btn btn-success" name="status" value="APROVADO"
+                            th:if="${user.statusAprovacao != T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
+                        <i class="bi bi-check-circle me-1"></i> Aprovar
+                    </button>
+                    <button type="submit" class="btn btn-danger" name="status" value="REJEITADO"
+                            th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
+                        <i class="bi bi-x-circle me-1"></i> Desativar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reutiliza seu footer e scripts -->
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+</html>

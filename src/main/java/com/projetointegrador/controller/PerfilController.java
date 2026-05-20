@@ -39,7 +39,7 @@ public class PerfilController {
 
     @GetMapping("/perfil")
     public String abrirPerfil() {
-        return "perfil/inicio";
+        return "perfil/profile";
     }
 
     @PostMapping("/perfil/foto")
