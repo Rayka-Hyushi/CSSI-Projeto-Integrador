@@ -86,7 +86,7 @@ public class AutenticacaoController {
             // Campos de Prestador
             @RequestParam(value = "placaVeiculo", required = false) String placaVeiculo,
             @RequestParam(value = "tipoVeiculo", required = false) String tipoVeiculoStr,
-            @RequestParam(value = "capacidadeModel", required = false) double capacidade,
+            @RequestParam(value = "capacidadeModel", required = false) Double capacidade,
             @RequestParam(value = "abertoFechado", required = false) String abertoFechadoStr,
             @RequestParam(value = "servicos", required = false) List<Long> servicosIds,
             @RequestParam(value = "bairros", required = false) List<Long> bairrosIds,
@@ -129,7 +129,7 @@ public class AutenticacaoController {
                 v.setPrestador(p);
                 v.setPlaca(placaVeiculo);
                 v.setTipo(TipoVeiculo.valueOf(tipoVeiculoStr));
-                v.setCapacidadeCarga(capacidade);
+                v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
                 v.setFechado("ABERTO".equalsIgnoreCase(abertoFechadoStr));
                 veiculoRepository.save(v);
             }

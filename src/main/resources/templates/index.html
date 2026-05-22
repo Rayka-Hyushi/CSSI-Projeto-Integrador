@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/navbar :: head('Login')}"></head>
+<head th:replace="~{fragments/navbar :: head('Login')}">
+    <title>Login</title>
+</head>
 
 <body class="d-flex flex-column min-vh-100 bg-light">
 <nav th:replace="~{fragments/navbar :: navbar}"></nav>
@@ -13,6 +15,12 @@
                 <h2 class="fw-bold mt-2">Acesso ao Sistema</h2>
             </div>
 
+            <div th:if="${param.erro != null and param.erro[0] == 'nao-aprovado'}" class="alert alert-warning text-center">
+                O cadastro desse usuário ainda não foi aprovado.
+            </div>
+            <div th:if="${param.erro != null and param.erro[0] == 'login'}" class="alert alert-danger text-center">
+                Usuário ou senha inválidos.
+            </div>
             <div th:if="${param.error}" class="alert alert-danger text-center">
                 Usuário ou senha inválidos.
             </div>

@@ -38,6 +38,9 @@ public class AdminController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private com.projetointegrador.repository.VeiculoRepository veiculoRepository;
+
     @GetMapping("/usuarios")
     public String usuarios(Model model) {
         // Obter o usuário admin atualmente autenticado
@@ -53,9 +56,68 @@ public class AdminController {
                 .filter(u -> !u.getId().equals(adminAtual.map(Usuario::getId).orElse(-1L)))
                 .collect(Collectors.toList());
 
+        // Carrega veículos para prestadores (mapa: prestadorId -> lista de veículos)
+        java.util.Map<Long, java.util.List<com.projetointegrador.model.Veiculo>> veiculosMap = new java.util.HashMap<>();
+        for (Usuario u : usuarios) {
+            if (u instanceof Prestador) {
+                veiculosMap.put(u.getId(), veiculoRepository.findByPrestadorId(u.getId()));
+            }
+        }
+
         model.addAttribute("usuarios", usuarios);
+        model.addAttribute("veiculosMap", veiculosMap);
         model.addAttribute("totalUsuarios", usuarios.size());
         return "admin/usuarios";
+    }
+
+    @PostMapping("/usuarios/veiculo/salvar")
+    public String salvarVeiculo(@RequestParam(value = "id", required = false) Long id,
+                                @RequestParam("prestadorId") Long prestadorId,
+                                @RequestParam("placa") String placa,
+                                @RequestParam("tipo") String tipoStr,
+                                @RequestParam(value = "capacidade", required = false) Double capacidade,
+                                @RequestParam(value = "fechado", required = false) String fechado,
+                                RedirectAttributes redirectAttributes) {
+
+        java.util.Optional<Usuario> usuarioOpt = usuarioRepository.findById(prestadorId);
+        if (usuarioOpt.isPresent() && usuarioOpt.get() instanceof Prestador) {
+            Prestador prestador = (Prestador) usuarioOpt.get();
+            com.projetointegrador.model.Veiculo v;
+            if (id != null) {
+                v = veiculoRepository.findById(id).orElse(new com.projetointegrador.model.Veiculo());
+            } else {
+                v = new com.projetointegrador.model.Veiculo();
+            }
+
+            v.setPlaca(placa);
+            try {
+                v.setTipo(com.projetointegrador.model.TipoVeiculo.valueOf(tipoStr));
+            } catch (IllegalArgumentException e) {
+                // ignore invalid tipo
+            }
+            v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
+            v.setFechado("on".equalsIgnoreCase(fechado));
+            v.setPrestador(prestador);
+
+            veiculoRepository.save(v);
+            redirectAttributes.addFlashAttribute("sucesso", "Veículo salvo com sucesso.");
+        } else {
+            redirectAttributes.addFlashAttribute("erro", "Prestador não encontrado.");
+        }
+
+        return "redirect:/admin/usuarios";
+    }
+
+    @PostMapping("/usuarios/veiculo/remover")
+    public String removerVeiculo(@RequestParam("id") Long id, @RequestParam("prestadorId") Long prestadorId, RedirectAttributes redirectAttributes) {
+        java.util.Optional<com.projetointegrador.model.Veiculo> vOpt = veiculoRepository.findById(id);
+        if (vOpt.isPresent()) {
+            veiculoRepository.delete(vOpt.get());
+            redirectAttributes.addFlashAttribute("sucesso", "Veículo removido com sucesso.");
+        } else {
+            redirectAttributes.addFlashAttribute("erro", "Veículo não encontrado.");
+        }
+        return "redirect:/admin/usuarios";
     }
 
     @GetMapping("/solicitacoes")

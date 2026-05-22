@@ -1,14 +1,21 @@
 package com.projetointegrador.security;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
+import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +38,7 @@ public class SecurityConfig {
                         .loginPage("/")
                         .loginProcessingUrl("/login")
                         .successHandler(customSuccessHandler())
+                        .failureHandler(customFailureHandler())
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -59,6 +67,17 @@ public class SecurityConfig {
                 response.sendRedirect("/prestador/inicio");
             } else {
                 response.sendRedirect("/");
+            }
+        };
+    }
+
+    @Bean
+    public AuthenticationFailureHandler customFailureHandler() {
+        return (request, response, exception) -> {
+            if (exception instanceof DisabledException) {
+                response.sendRedirect("/?erro=nao-aprovado");
+            } else {
+                response.sendRedirect("/?erro=login");
             }
         };
     }

@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <!-- Reutiliza o fragmento 'head' do seu arquivo modelos/navbar.html -->
-<head th:replace="~{fragments/navbar :: head('Painel de Controle')}"></head>
+<head th:replace="~{fragments/navbar :: head('Painel de Controle')}">
+    <title>Painel de Controle</title>
+</head>
 <body class="d-flex flex-column min-vh-100 bg-light">
 
 <!-- Reutiliza sua navbar padrão -->
@@ -94,7 +96,7 @@
                 <h5 class="modal-title">Editar Dados do Usuário</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form th:action="@{/admin/usuarios/editar}" method="post">
+            <form th:action="@{/admin/usuarios/editar}" method="post" onsubmit="return cleanUserFields(this);">
                 <div class="modal-body">
                     <div class="row g-3">
                         <!-- Foto do Perfil (se existir) -->
@@ -117,7 +119,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="whatsapp" class="form-label"><strong>WhatsApp</strong></label>
-                                <input type="text" class="form-control" id="whatsapp" name="whatsapp" th:value="${user.whatsapp}" required>
+                                <input type="text" class="form-control whatsapp-field" id="whatsapp" name="whatsapp" th:value="${user.whatsapp}" required>
                             </div>
                         </div>
 
@@ -125,7 +127,7 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="cpf" class="form-label"><strong>CPF</strong></label>
-                                <input type="text" class="form-control" id="cpf" name="cpf" th:value="${user.cpf}" required>
+                                <input type="text" class="form-control cpf-field" id="cpf" name="cpf" th:value="${user.cpf}" required>
                             </div>
                             <div class="mb-3">
                                 <label for="tipoUsuario" class="form-label"><strong>Tipo de Usuário</strong></label>
@@ -135,14 +137,7 @@
                                 <label for="dataCadastro" class="form-label"><strong>Data de Cadastro</strong></label>
                                 <input type="text" class="form-control" id="dataCadastro" th:value="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}" disabled>
                             </div>
-                            <div class="mb-3" th:if="${user.statusAprovacao != null}">
-                                <label for="statusAprovacao" class="form-label"><strong>Status de Aprovação</strong></label>
-                                <select class="form-select" id="statusAprovacao" name="statusAprovacao">
-                                    <option value="PENDENTE" th:selected="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">Pendente</option>
-                                    <option value="APROVADO" th:selected="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">Aprovado</option>
-                                    <option value="REJEITADO" th:selected="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">Rejeitado</option>
-                                </select>
-                            </div>
+                            <!-- Status select removed: control is via Aprovar / Desativar buttons -->
                         </div>
 
                         <!-- Status do Usuário -->
@@ -158,6 +153,78 @@
                             <div class="alert alert-warning" role="alert" th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">
                                 <i class="bi bi-exclamation-circle me-2"></i>
                                 <strong>Cadastro pendente</strong> - Aguardando aprovação
+                            </div>
+                        </div>
+
+                        <!-- Veículos (apenas para prestadores) -->
+                        <div class="col-12 mt-3" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
+                            <h6>Veículos do Prestador</h6>
+                            <div th:if="${#lists.isEmpty(veiculosMap[user.id])}">
+                                <p class="text-muted">Nenhum veículo cadastrado.</p>
+                            </div>
+
+                            <div th:each="v : ${veiculosMap[user.id]}" class="mb-3 border rounded p-3 bg-light">
+                                <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post" class="row g-2">
+                                    <input type="hidden" name="id" th:value="${v.id}" />
+                                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Placa</label>
+                                        <input type="text" name="placa" class="form-control" th:value="${v.placa}" required />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Tipo</label>
+                                        <select name="tipo" class="form-select">
+                                            <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}" th:value="${t.name()}" th:text="${t.getDescricao()}" th:selected="${v.tipo == t}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Capacidade</label>
+                                        <input type="number" step="0.1" name="capacidade" class="form-control" th:value="${v.capacidadeCarga}" />
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="fechado" th:checked="${v.fechado}" />
+                                            <label class="form-check-label small">Fechado</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end justify-content-end">
+                                        <button type="submit" class="btn btn-sm btn-primary me-2">Salvar</button>
+                                </form>
+                                <form th:action="@{/admin/usuarios/veiculo/remover}" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" th:value="${v.id}" />
+                                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Remover</button>
+                                </form>
+                            </div>
+
+                            <!-- Form para adicionar novo veículo -->
+                            <div class="card mt-2 p-3">
+                                <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post" class="row g-2">
+                                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Placa</label>
+                                        <input type="text" name="placa" class="form-control" placeholder="ABC1D23" required />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small">Tipo</label>
+                                        <select name="tipo" class="form-select">
+                                            <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}" th:value="${t.name()}" th:text="${t.getDescricao()}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label small">Capacidade</label>
+                                        <input type="number" step="0.1" name="capacidade" class="form-control" />
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="fechado" />
+                                            <label class="form-check-label small">Fechado</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end justify-content-end">
+                                        <button type="submit" class="btn btn-sm btn-success">Adicionar Veículo</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -194,5 +261,86 @@
 <!-- Reutiliza seu footer e scripts -->
 <footer th:replace="~{fragments/navbar :: footer}"></footer>
 <div th:replace="~{fragments/navbar :: scripts}"></div>
+
+<!-- Page scripts: formatting for CPF and WhatsApp fields in modals -->
+<script>
+    (function(){
+        function onlyDigits(value) {
+            return value ? value.replace(/\D+/g, '') : '';
+        }
+
+        function formatCPF(value) {
+            var v = onlyDigits(value).slice(0,11);
+            if (!v) return '';
+            if (v.length <= 3) return v;
+            if (v.length <= 6) return v.slice(0,3) + '.' + v.slice(3);
+            if (v.length <= 9) return v.slice(0,3) + '.' + v.slice(3,6) + '.' + v.slice(6);
+            return v.slice(0,3) + '.' + v.slice(3,6) + '.' + v.slice(6,9) + '-' + v.slice(9);
+        }
+
+        function formatWhatsapp(value) {
+            var v = onlyDigits(value);
+            // Remove leading country code if present (e.g., 55)
+            if (v.length > 11 && v.startsWith('55')) {
+                v = v.slice(2);
+            }
+            v = v.slice(0,11);
+            if (!v) return '';
+            if (v.length <= 2) return '(' + v;
+            if (v.length <= 6) return '(' + v.slice(0,2) + ') ' + v.slice(2);
+            if (v.length <= 10) return '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+            return '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+        }
+
+        function attachFormatting() {
+            document.querySelectorAll('.cpf-field').forEach(function(el) {
+                // initialize value
+                el.value = formatCPF(el.value);
+                el.addEventListener('input', function(){
+                    el.value = formatCPF(el.value);
+                    // best-effort: place cursor at end
+                    el.selectionStart = el.selectionEnd = el.value.length;
+                });
+            });
+
+            document.querySelectorAll('.whatsapp-field').forEach(function(el) {
+                el.value = formatWhatsapp(el.value);
+                el.addEventListener('input', function(){
+                    el.value = formatWhatsapp(el.value);
+                    el.selectionStart = el.selectionEnd = el.value.length;
+                });
+            });
+        }
+
+        // Attach when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachFormatting);
+        } else {
+            attachFormatting();
+        }
+
+        // Also re-attach when any modal is shown (dynamic content)
+        document.addEventListener('shown.bs.modal', function(){
+            attachFormatting();
+        });
+
+        // Remove non-digit characters before submitting the edit user form
+        window.cleanUserFields = function(form) {
+            try {
+                var cpf = form.querySelector('.cpf-field');
+                var whatsapp = form.querySelector('.whatsapp-field');
+                if (cpf && cpf.value) {
+                    cpf.value = cpf.value.replace(/\D+/g, '');
+                }
+                if (whatsapp && whatsapp.value) {
+                    whatsapp.value = whatsapp.value.replace(/\D+/g, '');
+                }
+            } catch (e) {
+                // fail silently — let the form submit
+            }
+            return true;
+        };
+    })();
+</script>
 </body>
 </html>
