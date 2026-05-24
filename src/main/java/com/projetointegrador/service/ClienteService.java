@@ -27,6 +27,10 @@ public class ClienteService {
         return clienteRepository.findById(id);
     }
 
+    public Optional<Cliente> buscarPorEmail(String email) {
+        return clienteRepository.findByEmail(email);
+    }
+
     public Cliente salvar(Cliente cliente) {
 		if (cliente.getSenha() != null) {
 			cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));

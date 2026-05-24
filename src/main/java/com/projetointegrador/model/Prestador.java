@@ -20,6 +20,9 @@ public class Prestador extends Usuario {
     @Column(name = "recomendacoes")
     private int recomendacoes;
 
+    @Column(name = "status_online")
+    private boolean statusOnline = false;
+
     @OneToMany(mappedBy = "prestador", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Veiculo> veiculos;
 
@@ -57,6 +60,14 @@ public class Prestador extends Usuario {
 
     public void setRecomendacoes(int recomendacoes) {
         this.recomendacoes = recomendacoes;
+    }
+
+    public boolean isStatusOnline() {
+        return statusOnline;
+    }
+
+    public void setStatusOnline(boolean statusOnline) {
+        this.statusOnline = statusOnline;
     }
 
     public List<Veiculo> getVeiculos() {

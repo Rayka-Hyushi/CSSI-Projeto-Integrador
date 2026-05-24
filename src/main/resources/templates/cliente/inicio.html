@@ -66,13 +66,13 @@
                                             Selecione uma opção
                                         </option>
                                         <option value="PEQUENO" th:selected="${tamanhoFreteSelecionado == 'PEQUENO'}">
-                                            Pequeno
+                                            Pequeno (Itens avulsos ou pequenas cargas)
                                         </option>
                                         <option value="MEDIO" th:selected="${tamanhoFreteSelecionado == 'MEDIO'}">
-                                            Médio
+                                            Médio (Mudança de casa ou apartamento)
                                         </option>
                                         <option value="GRANDE" th:selected="${tamanhoFreteSelecionado == 'GRANDE'}">
-                                            Grande
+                                            Grande (Mudança empresarial)
                                         </option>
                                     </select>
                                 </div>
@@ -154,13 +154,32 @@
                         <div class="card h-100 border-0 shadow-sm cliente-result-card">
                             <div class="card-body p-4 d-flex flex-column">
                                 <div class="d-flex align-items-center gap-3 mb-3">
-                                    <img class="rounded-circle cliente-avatar" width="64" height="64"
-                                         th:src="${prestador.profilePhotoUrl != null and !#strings.isEmpty(prestador.profilePhotoUrl) ? prestador.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + prestador.nomeCompleto + '&background=random'}"
-                                         alt="Foto do prestador">
+                                    <div class="position-relative">
+                                        <img class="rounded-circle cliente-avatar" width="64" height="64"
+                                             th:src="${prestador.profilePhotoUrl != null and !#strings.isEmpty(prestador.profilePhotoUrl) ? prestador.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + prestador.nomeCompleto + '&background=random'}"
+                                             alt="Foto do prestador">
+                                        <span style="width: 16px; height: 16px; border: 2px solid white;"
+                                              th:class="${'position-absolute bottom-0 end-0 p-1 rounded-circle ' + (prestador.statusOnline ? 'bg-success' : 'bg-secondary')}"
+                                              title="Status online"></span>
+                                    </div>
                                     <div>
                                         <h3 class="h6 fw-bold mb-1" th:text="${prestador.nomeCompleto}">Nome</h3>
-                                        <p class="text-muted small mb-0" th:text="${prestador.email}">
-                                            email@exemplo.com</p>
+                                        <small class="text-muted" th:text="${prestador.statusOnline ? 'Online' : 'Offline'}"></small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-2">Veículo(s)</small>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div th:if="${prestador.veiculos != null and !#lists.isEmpty(prestador.veiculos)}"
+                                             th:each="veiculo : ${prestador.veiculos}">
+                                            <span class="badge rounded-pill text-bg-light border text-dark"
+                                                  th:text="${veiculo.tipo}">Tipo</span>
+                                            <small class="text-muted ms-1" th:text="${veiculo.capacidadeCarga + ' kg'}">0 kg</small>
+                                        </div>
+                                        <div th:unless="${prestador.veiculos != null and !#lists.isEmpty(prestador.veiculos)}">
+                                            <small class="text-muted">Nenhum veículo cadastrado</small>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -174,7 +193,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <small class="text-muted d-block mb-2">Serviços</small>
+                                    <small class="text-muted d-block mb-2">Serviços adicionais</small>
                                     <div class="d-flex flex-wrap gap-2">
                                         <span class="badge rounded-pill text-bg-primary"
                                               th:each="servico : ${prestador.servicos}"
@@ -187,9 +206,13 @@
                                             th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
                                         <i class="bi bi-whatsapp me-1"></i> Falar no WhatsApp
                                     </button>
-                                    <a class="btn btn-outline-primary" th:href="${'mailto:' + prestador.email}">
-                                        <i class="bi bi-envelope me-1"></i> Enviar e-mail
-                                    </a>
+                                    <button type="button" class="btn btn-outline-warning"
+                                            th:attr="data-prestador-id=${prestador.id}"
+                                            onclick="recomendarPrestador(this)">
+                                        <i class="bi bi-hand-thumbs-up me-1"></i>
+                                        <span class="count" th:text="${prestador.recomendacoes}">0</span>
+                                        <span class="text">Recomendar</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -218,6 +241,70 @@
         }
 
         window.open('https://wa.me/' + numero, '_blank', 'noopener');
+    }
+
+    function recomendarPrestador(botao) {
+        const prestadorId = botao.getAttribute('data-prestador-id');
+        const countElement = botao.querySelector('.count');
+        const textElement = botao.querySelector('.text');
+
+        // Desabilita o botão durante requisição
+        botao.disabled = true;
+        const textoOriginal = textElement.textContent;
+        textElement.textContent = 'Enviando...';
+
+        fetch(`/cliente/recomendar/${prestadorId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                // Atualiza o contador
+                countElement.textContent = data.novasRecomendacoes;
+                // Desabilita o botão permanentemente
+                botao.disabled = true;
+                textElement.textContent = 'Recomendado!';
+                botao.classList.remove('btn-outline-warning');
+                botao.classList.add('btn-warning');
+
+                // Mostra mensagem de sucesso
+                showNotification(data.mensagem, 'success');
+            } else {
+                textElement.textContent = textoOriginal;
+                botao.disabled = false;
+                showNotification(data.mensagem, 'warning');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            textElement.textContent = textoOriginal;
+            botao.disabled = false;
+            showNotification('Erro ao tentar recomendar', 'danger');
+        });
+    }
+
+    function showNotification(mensagem, tipo) {
+        // Cria um alert toast simples
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.right = '20px';
+        alertDiv.style.minWidth = '300px';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = mensagem +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+
+        document.body.appendChild(alertDiv);
+
+        // Remove após 4 segundos
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 4000);
     }
 </script>
 </body>
