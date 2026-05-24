@@ -79,9 +79,8 @@ public class AdminController {
                                 @RequestParam(value = "fechado", required = false) String fechado,
                                 RedirectAttributes redirectAttributes) {
 
-        java.util.Optional<Usuario> usuarioOpt = usuarioRepository.findById(prestadorId);
-        if (usuarioOpt.isPresent() && usuarioOpt.get() instanceof Prestador) {
-            Prestador prestador = (Prestador) usuarioOpt.get();
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(prestadorId);
+        if (usuarioOpt.isPresent() && usuarioOpt.get() instanceof Prestador prestador) {
             com.projetointegrador.model.Veiculo v;
             if (id != null) {
                 v = veiculoRepository.findById(id).orElse(new com.projetointegrador.model.Veiculo());
@@ -109,7 +108,7 @@ public class AdminController {
     }
 
     @PostMapping("/usuarios/veiculo/remover")
-    public String removerVeiculo(@RequestParam("id") Long id, @RequestParam("prestadorId") Long prestadorId, RedirectAttributes redirectAttributes) {
+    public String removerVeiculo(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
         java.util.Optional<com.projetointegrador.model.Veiculo> vOpt = veiculoRepository.findById(id);
         if (vOpt.isPresent()) {
             veiculoRepository.delete(vOpt.get());
@@ -123,11 +122,11 @@ public class AdminController {
     @GetMapping("/solicitacoes")
     public String solicitacoes(Model model) {
 
-        long totalPendentes = solicitacaoRepository.countByStatus(StatusAprovacao.PENDENTE);
-        long totalResolvidas = solicitacaoRepository.countByStatus(StatusAprovacao.APROVADO) + solicitacaoRepository.countByStatus(StatusAprovacao.REJEITADO);
+        long totalPendentes = solicitacaoRepository.countByStatusSolicitacao(StatusAprovacao.PENDENTE);
+        long totalResolvidas = solicitacaoRepository.countByStatusSolicitacao(StatusAprovacao.APROVADO) + solicitacaoRepository.countByStatusSolicitacao(StatusAprovacao.REJEITADO);
         long totalUsuarios = usuarioRepository.count();
 
-        List<Solicitacao> solicitacoesPendentes = solicitacaoRepository.findByStatus(StatusAprovacao.PENDENTE);
+        List<Solicitacao> solicitacoesPendentes = solicitacaoRepository.findByStatusSolicitacao(StatusAprovacao.PENDENTE);
 
         model.addAttribute("totalPendentes", totalPendentes);
         model.addAttribute("totalResolvidas", totalResolvidas);
@@ -142,7 +141,7 @@ public class AdminController {
         Optional<Solicitacao> solOpt = solicitacaoRepository.findById(id);
         if (solOpt.isPresent()) {
             Solicitacao s = solOpt.get();
-            s.setStatus(StatusAprovacao.APROVADO);
+            s.setStatusSolicitacao(StatusAprovacao.APROVADO);
 
             // Se for de cadastro ou outro que envolva usuário com pendência, altera para aprovado
             Usuario u = s.getUsuario();
@@ -167,7 +166,7 @@ public class AdminController {
         Optional<Solicitacao> solOpt = solicitacaoRepository.findById(id);
         if (solOpt.isPresent()) {
             Solicitacao s = solOpt.get();
-            s.setStatus(StatusAprovacao.REJEITADO);
+            s.setStatusSolicitacao(StatusAprovacao.REJEITADO);
 
             Usuario u = s.getUsuario();
             if (u != null) {

@@ -11,35 +11,20 @@ public class Solicitacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Pode não haver um usuário caso seja um Cadastro ou link de recuperação
     @ManyToOne
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    // Campos temporários usados para Cadastro/Recuperação onde o usuário final não está gerado ou é apenas referência cruzada
-    @Column(length = 150)
-    private String nome;
-
-    @Column(length = 150)
-    private String email;
-
-    @Column(length = 17)
-    private String whatsapp;
-
-    @Column(length = 14)
-    private String cpf;
-
-    // Armazena JSON ou String delimitada se for dados de Cadastro de Prestador, etc. (Opcional, focado em suporte por enquanto)
     @Column(columnDefinition = "TEXT")
     private String detalhes;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TipoSolicitacao tipo;
+    @Column(name = "tipo_solicitacao", nullable = false)
+    private TipoSolicitacao tipoSolicitacao;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private StatusAprovacao status = StatusAprovacao.PENDENTE;
+    @Column(name = "status_solicitacao", nullable = false)
+    private StatusAprovacao statusSolicitacao = StatusAprovacao.PENDENTE;
 
     @Column(name = "data_solicitacao", nullable = false, updatable = false)
     private LocalDateTime dataSolicitacao;
@@ -66,38 +51,6 @@ public class Solicitacao {
         this.usuario = usuario;
     }
 
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getWhatsapp() {
-        return whatsapp;
-    }
-
-    public void setWhatsapp(String whatsapp) {
-        this.whatsapp = whatsapp;
-    }
-
-    public String getCpf() {
-        return cpf;
-    }
-
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
-
     public String getDetalhes() {
         return detalhes;
     }
@@ -106,20 +59,20 @@ public class Solicitacao {
         this.detalhes = detalhes;
     }
 
-    public TipoSolicitacao getTipo() {
-        return tipo;
+    public TipoSolicitacao getTipoSolicitacao() {
+        return tipoSolicitacao;
     }
 
-    public void setTipo(TipoSolicitacao tipo) {
-        this.tipo = tipo;
+    public void setTipoSolicitacao(TipoSolicitacao tipoSolicitacao) {
+        this.tipoSolicitacao = tipoSolicitacao;
     }
 
-    public StatusAprovacao getStatus() {
-        return status;
+    public StatusAprovacao getStatusSolicitacao() {
+        return statusSolicitacao;
     }
 
-    public void setStatus(StatusAprovacao status) {
-        this.status = status;
+    public void setStatusSolicitacao(StatusAprovacao statusSolicitacao) {
+        this.statusSolicitacao = statusSolicitacao;
     }
 
     public LocalDateTime getDataSolicitacao() {

@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.projetointegrador.model.*;
 import com.projetointegrador.repository.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -151,13 +150,9 @@ public class AutenticacaoController {
 
         // Criar a solicitação para o admin aprovar
         Solicitacao sol = new Solicitacao();
-        sol.setTipo(TipoSolicitacao.CADASTRO);
+        sol.setTipoSolicitacao(TipoSolicitacao.CADASTRO);
         sol.setUsuario(novoUsuario);
-        sol.setNome(novoUsuario.getNomeCompleto());
-        sol.setEmail(novoUsuario.getEmail());
-        sol.setWhatsapp(novoUsuario.getWhatsapp());
-        sol.setCpf(novoUsuario.getCpf());
-        sol.setStatus(StatusAprovacao.PENDENTE);
+        sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
 
         String formDetalhes = "Nova conta tipo: " + tipoUsuario.name() + "\n";
         if(isPrestador) {

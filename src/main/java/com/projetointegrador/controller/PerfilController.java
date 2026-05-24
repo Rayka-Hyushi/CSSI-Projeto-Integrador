@@ -60,7 +60,7 @@ public class PerfilController {
             }
 
             // Gera um nome único para o arquivo, evitando sobrescrever
-            String fileName = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
+            String fileName = UUID.randomUUID() + "_" + foto.getOriginalFilename();
             Path filePath = uploadPath.resolve(fileName);
 
             // Salva o arquivo no disco
@@ -79,7 +79,7 @@ public class PerfilController {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Erro ao fazer upload da imagem: " + e.getMessage());
             redirectAttributes.addFlashAttribute("erro", "Erro ao fazer upload da imagem.");
         }
 
@@ -141,19 +141,15 @@ public class PerfilController {
 
             // Define o tipo
             if ("ALTERACAO_DADOS".equals(assunto)) {
-                solicitacao.setTipo(TipoSolicitacao.ALTERACAO_DADOS);
+                solicitacao.setTipoSolicitacao(TipoSolicitacao.ALTERACAO_DADOS);
             } else if ("SUPORTE".equals(assunto)) {
-                solicitacao.setTipo(TipoSolicitacao.SUPORTE);
+                solicitacao.setTipoSolicitacao(TipoSolicitacao.SUPORTE);
             } else {
-                solicitacao.setTipo(TipoSolicitacao.OUTRO);
+                solicitacao.setTipoSolicitacao(TipoSolicitacao.OUTRO);
             }
 
             solicitacao.setDetalhes(mensagem);
-            solicitacao.setStatus(StatusAprovacao.PENDENTE);
-            solicitacao.setNome(userOpt.get().getNomeCompleto());
-            solicitacao.setEmail(userOpt.get().getEmail());
-            solicitacao.setCpf(userOpt.get().getCpf());
-            solicitacao.setWhatsapp(userOpt.get().getWhatsapp());
+            solicitacao.setStatusSolicitacao(StatusAprovacao.PENDENTE);
 
             solicitacaoRepository.save(solicitacao);
             redirectAttributes.addFlashAttribute("sucesso", "Sua solicitação foi enviada aos administradores!");
@@ -170,21 +166,34 @@ public class PerfilController {
                                             @RequestParam("email") String email,
                                             RedirectAttributes redirectAttributes) {
 
-        Solicitacao sol = new Solicitacao();
-        sol.setTipo(TipoSolicitacao.RECUPERACAO_SENHA);
-        sol.setNome(nome);
-        sol.setCpf(cpf);
-        sol.setEmail(email);
-        sol.setStatus(StatusAprovacao.PENDENTE);
-        sol.setDetalhes("Solicitação de recuperação de senha via tela de login.");
-
-        // Tenta vincular ao usuário se existir
         Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
-        userOpt.ifPresent(sol::setUsuario);
 
-        solicitacaoRepository.save(sol);
+        if (userOpt.isPresent()) {
+            Usuario usuario = userOpt.get();
+            boolean nomeConfere = usuario.getNomeCompleto() != null && usuario.getNomeCompleto().trim().equalsIgnoreCase(nome.trim());
+            boolean cpfConfere = usuario.getCpf() != null && usuario.getCpf().replaceAll("\\D", "").equals(cpf.replaceAll("\\D", ""));
 
-        redirectAttributes.addFlashAttribute("sucesso", "Solicitação de recuperação enviada! Aguarde as instruções da nossa equipe no seu e-mail.");
+            if (nomeConfere && cpfConfere) {
+                Solicitacao sol = new Solicitacao();
+                sol.setTipoSolicitacao(TipoSolicitacao.RECUPERACAO_SENHA);
+                sol.setUsuario(usuario);
+                sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
+                sol.setDetalhes(
+                        "Solicitação de recuperação de senha via tela de login.\n" +
+                        "Nome informado: " + nome + "\n" +
+                        "CPF informado: " + cpf + "\n" +
+                        "E-mail informado: " + email
+                );
+
+                solicitacaoRepository.save(sol);
+                redirectAttributes.addFlashAttribute("sucesso", "Solicitação de recuperação enviada! Aguarde as instruções da nossa equipe no seu e-mail.");
+            } else {
+                redirectAttributes.addFlashAttribute("erro", "Os dados informados não conferem com um usuário cadastrado.");
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("erro", "Não foi possível localizar um usuário com esse e-mail.");
+        }
+
         return "redirect:/";
     }
 }
