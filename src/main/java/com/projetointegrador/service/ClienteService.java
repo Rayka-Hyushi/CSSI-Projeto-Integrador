@@ -28,6 +28,9 @@ public class ClienteService {
     }
 
     public Cliente salvar(Cliente cliente) {
+		if (cliente.getSenha() != null) {
+			cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));
+		}
         return clienteRepository.save(cliente);
     }
 

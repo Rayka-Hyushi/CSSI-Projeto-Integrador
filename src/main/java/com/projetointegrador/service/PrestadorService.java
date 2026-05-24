@@ -32,6 +32,9 @@ public class PrestadorService {
     }
 
     public Prestador salvar(Prestador prestador) {
+		if (prestador.getSenha() != null) {
+			prestador.setSenha(passwordEncoder.encode(prestador.getSenha()));
+		}
         return prestadorRepository.save(prestador);
     }
 
