@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.projetointegrador.model.*;
-import com.projetointegrador.repository.*;
+import com.projetointegrador.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,22 +23,22 @@ import java.util.List;
 public class AutenticacaoController {
 
     @Autowired
-    private BairroRepository bairroRepository;
+    private BairroService bairroService;
 
     @Autowired
-    private ServicoAdicionalRepository servicoAdicionalRepository;
+    private ServicoAdicionalService servicoAdicionalService;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private ClienteService clienteService;
 
     @Autowired
-    private PrestadorRepository prestadorRepository;
+    private PrestadorService prestadorService;
 
     @Autowired
-    private VeiculoRepository veiculoRepository;
+    private VeiculoService veiculoService;
 
     @Autowired
-    private SolicitacaoRepository solicitacaoRepository;
+    private SolicitacaoService solicitacaoService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -68,8 +68,8 @@ public class AutenticacaoController {
 
     @GetMapping("/cadastro")
     public String abrirCadastro(Model model) {
-        model.addAttribute("bairros", bairroRepository.findAll());
-        model.addAttribute("servicos", servicoAdicionalRepository.findAll());
+        model.addAttribute("bairros", bairroService.listarTodos());
+        model.addAttribute("servicos", servicoAdicionalService.listarTodos());
         return "cadastro";
     }
 
@@ -108,19 +108,19 @@ public class AutenticacaoController {
 
             // Bairros
             if (bairrosIds != null && !bairrosIds.isEmpty()) {
-                p.setBairros(bairroRepository.findAllById(bairrosIds));
+                p.setBairros(bairroService.buscarPorIds(bairrosIds));
             } else {
                 p.setBairros(new ArrayList<>());
             }
 
             // Servicos
             if (servicosIds != null && !servicosIds.isEmpty()) {
-                p.setServicos(servicoAdicionalRepository.findAllById(servicosIds));
+                p.setServicos(servicoAdicionalService.buscarPorIds(servicosIds));
             } else {
                 p.setServicos(new ArrayList<>());
             }
 
-            prestadorRepository.save(p);
+            prestadorService.salvar(p);
 
             // Veiculo se existir informações
             if(placaVeiculo != null && !placaVeiculo.isBlank()){
@@ -130,7 +130,7 @@ public class AutenticacaoController {
                 v.setTipo(TipoVeiculo.valueOf(tipoVeiculoStr));
                 v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
                 v.setFechado("ABERTO".equalsIgnoreCase(abertoFechadoStr));
-                veiculoRepository.save(v);
+                veiculoService.salvar(v);
             }
             novoUsuario = p;
 
@@ -143,7 +143,7 @@ public class AutenticacaoController {
             c.setCpf(cpf);
             c.setSenha(passwordEncoder.encode(senha));
             c.setTipoUsuario(tipoUsuario);
-            clienteRepository.save(c);
+            clienteService.salvar(c);
 
             novoUsuario = c;
         }
@@ -159,7 +159,7 @@ public class AutenticacaoController {
              formDetalhes += "Placa: " + placaVeiculo + "\n";
         }
         sol.setDetalhes(formDetalhes);
-        solicitacaoRepository.save(sol);
+        solicitacaoService.criar(sol);
 
         redirectAttributes.addFlashAttribute("sucesso", "Cadastro realizado com sucesso! Aguarde a aprovação da nossa equipe antes de tentar fazer login.");
         return "redirect:/"; // Volta pro login

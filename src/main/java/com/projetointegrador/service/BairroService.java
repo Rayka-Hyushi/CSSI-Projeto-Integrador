@@ -36,4 +36,8 @@ public class BairroService {
     public void deletar(Long id) {
         bairroRepository.deleteById(id);
     }
+
+    public List<Bairro> buscarPorIds(List<Long> ids) {
+        return bairroRepository.findAllById(ids);
+    }
 }

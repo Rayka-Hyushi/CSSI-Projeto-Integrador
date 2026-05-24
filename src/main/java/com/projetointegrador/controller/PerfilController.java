@@ -4,8 +4,8 @@ import com.projetointegrador.model.Usuario;
 import com.projetointegrador.model.Solicitacao;
 import com.projetointegrador.model.StatusAprovacao;
 import com.projetointegrador.model.TipoSolicitacao;
-import com.projetointegrador.repository.UsuarioRepository;
-import com.projetointegrador.repository.SolicitacaoRepository;
+import com.projetointegrador.service.UsuarioService;
+import com.projetointegrador.service.SolicitacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.Authentication;
@@ -27,10 +27,10 @@ import java.util.UUID;
 public class PerfilController {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
     @Autowired
-    private SolicitacaoRepository solicitacaoRepository;
+    private SolicitacaoService solicitacaoService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -49,7 +49,7 @@ public class PerfilController {
 
         if (foto.isEmpty()) {
             redirectAttributes.addFlashAttribute("erro", "Selecione uma imagem para fazer upload.");
-            return "redirect:/"; // Substitua caso tenha uma view de perfil dedicada
+            return "redirect:/perfil";
         }
 
         try {
@@ -68,13 +68,12 @@ public class PerfilController {
 
             // Atualiza o usuário no banco de dados com a nova URL
             String email = authentication.getName();
-            Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+            Optional<Usuario> usuarioOpt = usuarioService.buscarPorEmail(email);
 
             if (usuarioOpt.isPresent()) {
                 Usuario usuario = usuarioOpt.get();
-                // A URL salva é o caminho que condiz com o nosso WebConfig
                 usuario.setProfilePhotoUrl("/uploads/" + fileName);
-                usuarioRepository.save(usuario);
+                usuarioService.salvarDirecto(usuario);
                 redirectAttributes.addFlashAttribute("sucesso", "Foto de perfil atualizada com sucesso!");
             }
 
@@ -83,7 +82,6 @@ public class PerfilController {
             redirectAttributes.addFlashAttribute("erro", "Erro ao fazer upload da imagem.");
         }
 
-        // Volta para a página atual usando o referer, pra funcionar em qualquer lugar que o modal for chamado
         return "redirect:/perfil";
     }
 
@@ -96,7 +94,7 @@ public class PerfilController {
                                       Authentication authentication,
                                       RedirectAttributes redirectAttributes) {
 
-        Optional<Usuario> userOpt = usuarioRepository.findByEmail(authentication.getName());
+        Optional<Usuario> userOpt = usuarioService.buscarPorEmail(authentication.getName());
         if(userOpt.isPresent()) {
             Usuario u = userOpt.get();
             // Permite atualizar apenas se for admin.
@@ -112,13 +110,13 @@ public class PerfilController {
                     u.setSenha(passwordEncoder.encode(novaSenha));
                 }
 
-                usuarioRepository.save(u);
+                usuarioService.salvarDirecto(u);
                 redirectAttributes.addFlashAttribute("sucesso", "Dados atualizados com sucesso!");
             } else {
                 // Se for um usuário comum, permite apenas atualizar a senha
                 if (novaSenha != null && !novaSenha.isBlank()) {
                     u.setSenha(passwordEncoder.encode(novaSenha));
-                    usuarioRepository.save(u);
+                    usuarioService.salvarDirecto(u);
                     redirectAttributes.addFlashAttribute("sucesso", "Senha atualizada com sucesso!");
                 } else {
                     redirectAttributes.addFlashAttribute("erro", "Você não tem permissão para alterar estes dados.");
@@ -134,7 +132,7 @@ public class PerfilController {
                                            Authentication authentication,
                                            RedirectAttributes redirectAttributes) {
 
-        Optional<Usuario> userOpt = usuarioRepository.findByEmail(authentication.getName());
+        var userOpt = usuarioService.buscarPorEmail(authentication.getName());
         if (userOpt.isPresent()) {
             Solicitacao solicitacao = new Solicitacao();
             solicitacao.setUsuario(userOpt.get());
@@ -151,7 +149,7 @@ public class PerfilController {
             solicitacao.setDetalhes(mensagem);
             solicitacao.setStatusSolicitacao(StatusAprovacao.PENDENTE);
 
-            solicitacaoRepository.save(solicitacao);
+            solicitacaoService.criar(solicitacao);
             redirectAttributes.addFlashAttribute("sucesso", "Sua solicitação foi enviada aos administradores!");
         } else {
             redirectAttributes.addFlashAttribute("erro", "Erro ao encontrar seu usuário para criar solicitação!");
@@ -166,7 +164,7 @@ public class PerfilController {
                                             @RequestParam("email") String email,
                                             RedirectAttributes redirectAttributes) {
 
-        Optional<Usuario> userOpt = usuarioRepository.findByEmail(email);
+        var userOpt = usuarioService.buscarPorEmail(email);
 
         if (userOpt.isPresent()) {
             Usuario usuario = userOpt.get();
@@ -185,7 +183,7 @@ public class PerfilController {
                         "E-mail informado: " + email
                 );
 
-                solicitacaoRepository.save(sol);
+                solicitacaoService.criar(sol);
                 redirectAttributes.addFlashAttribute("sucesso", "Solicitação de recuperação enviada! Aguarde as instruções da nossa equipe no seu e-mail.");
             } else {
                 redirectAttributes.addFlashAttribute("erro", "Os dados informados não conferem com um usuário cadastrado.");

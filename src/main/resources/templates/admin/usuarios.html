@@ -156,77 +156,53 @@
                             </div>
                         </div>
 
-                        <!-- Veículos (apenas para prestadores) -->
-                        <div class="col-12 mt-3" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
-                            <h6>Veículos do Prestador</h6>
-                            <div th:if="${#lists.isEmpty(veiculosMap[user.id])}">
-                                <p class="text-muted">Nenhum veículo cadastrado.</p>
-                            </div>
-
-                            <div th:each="v : ${veiculosMap[user.id]}" class="mb-3 border rounded p-3 bg-light">
-                                <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post" class="row g-2">
-                                    <input type="hidden" name="id" th:value="${v.id}" />
-                                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
-                                    <div class="col-md-3">
-                                        <label class="form-label small">Placa</label>
-                                        <input type="text" name="placa" class="form-control" th:value="${v.placa}" required />
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label small">Tipo</label>
-                                        <select name="tipo" class="form-select">
-                                            <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}" th:value="${t.name()}" th:text="${t.getDescricao()}" th:selected="${v.tipo == t}"></option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label small">Capacidade</label>
-                                        <input type="number" step="0.1" name="capacidade" class="form-control" th:value="${v.capacidadeCarga}" />
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="fechado" th:checked="${v.fechado}" />
-                                            <label class="form-check-label small">Fechado</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end justify-content-end">
-                                        <button type="submit" class="btn btn-sm btn-primary me-2">Salvar</button>
-                                </form>
-                                <form th:action="@{/admin/usuarios/veiculo/remover}" method="post" style="display:inline;">
-                                    <input type="hidden" name="id" th:value="${v.id}" />
-                                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
-                                    <button type="submit" class="btn btn-sm btn-danger">Remover</button>
-                                </form>
-                            </div>
-
-                            <!-- Form para adicionar novo veículo -->
-                            <div class="card mt-2 p-3">
-                                <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post" class="row g-2">
-                                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
-                                    <div class="col-md-3">
-                                        <label class="form-label small">Placa</label>
-                                        <input type="text" name="placa" class="form-control" placeholder="ABC1D23" required />
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label class="form-label small">Tipo</label>
-                                        <select name="tipo" class="form-select">
-                                            <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}" th:value="${t.name()}" th:text="${t.getDescricao()}"></option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label small">Capacidade</label>
-                                        <input type="number" step="0.1" name="capacidade" class="form-control" />
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="fechado" />
-                                            <label class="form-check-label small">Fechado</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end justify-content-end">
-                                        <button type="submit" class="btn btn-sm btn-success">Adicionar Veículo</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                        <!-- Veículos (apenas para prestadores) - MOVED OUTSIDE TO AVOID NESTED FORMS -->
+                         <div class="col-12 mt-3" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
+                             <h6 class="mb-2">
+                                 <i class="bi bi-truck-front me-2"></i>Veículos do Prestador
+                             </h6>
+                             <div th:if="${#lists.isEmpty(veiculosMap[user.id])}" class="text-muted small">
+                                 Nenhum veículo cadastrado.
+                             </div>
+                             <div th:if="!${#lists.isEmpty(veiculosMap[user.id])}" class="table-responsive">
+                                 <table class="table table-sm table-hover mb-2">
+                                     <thead class="table-light">
+                                         <tr>
+                                             <th class="ps-2">Placa</th>
+                                             <th>Tipo</th>
+                                             <th>Capacidade (kg)</th>
+                                             <th class="text-center">Fechado</th>
+                                             <th class="text-end pe-2">Ações</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody>
+                                         <tr th:each="v : ${veiculosMap[user.id]}">
+                                             <td class="ps-2"><code th:text="${v.placa}">ABC1D23</code></td>
+                                             <td><small th:text="${v.tipo.getDescricao()}">Fiorino</small></td>
+                                             <td><small th:text="${#numbers.formatDecimal(v.capacidadeCarga, 0, 'DEFAULT', 1, 'DEFAULT')}">100.0</small></td>
+                                             <td class="text-center">
+                                                 <small class="badge" th:class="${v.fechado ? 'bg-warning' : 'bg-secondary'}" th:text="${v.fechado ? 'Sim' : 'Não'}">Não</small>
+                                             </td>
+                                             <td class="text-end pe-2">
+                                                 <button type="button" class="btn btn-xs btn-outline-primary" data-bs-toggle="modal" th:data-bs-target="'#editVeiculoModal' + ${v.id}">
+                                                     <i class="bi bi-pencil"></i>
+                                                 </button>
+                                                 <form th:action="@{/admin/usuarios/veiculo/remover}" method="post" style="display:inline;">
+                                                     <input type="hidden" name="id" th:value="${v.id}" />
+                                                     <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('Tem certeza?')">
+                                                         <i class="bi bi-trash"></i>
+                                                     </button>
+                                                 </form>
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                             <!-- Botão para adicionar novo veículo -->
+                             <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" th:data-bs-target="'#addVeiculoModal' + ${user.id}">
+                                 <i class="bi bi-plus-circle me-1"></i>Adicionar Veículo
+                             </button>
+                         </div>
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between">
@@ -258,9 +234,116 @@
     </div>
 </div>
 
+<!-- Modals para adicionar e editar veículos (FORA do contexto de formulários aninhados) -->
+<div th:each="user : ${usuarios}" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
+    <!-- Modal para editar veículo -->
+    <div th:each="v : ${veiculosMap[user.id]}" class="modal fade" th:id="'editVeiculoModal' + ${v.id}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2"></i>Editar Veículo
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post">
+                    <div class="modal-body">
+                        <input type="hidden" name="id" th:value="${v.id}" />
+                        <input type="hidden" name="prestadorId" th:value="${user.id}" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Placa</label>
+                            <input type="text" name="placa" class="form-control" th:value="${v.placa}" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" class="form-select" required>
+                                <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}" th:value="${t.name()}" th:text="${t.getDescricao()}" th:selected="${v.tipo == t}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Capacidade de Carga (kg)</label>
+                            <input type="number" step="0.1" name="capacidade" class="form-control" th:value="${v.capacidadeCarga}" />
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="fechado" th:id="'editFechado' + ${v.id}" th:checked="${v.fechado}" />
+                            <label class="form-check-label" th:for="'editFechado' + ${v.id}">
+                                Veículo Fechado
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para adicionar novo veículo -->
+<div th:each="user : ${usuarios}" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}" class="modal fade" th:id="'addVeiculoModal' + ${user.id}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Adicionar Novo Veículo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="prestadorId" th:value="${user.id}" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Placa</label>
+                        <input type="text" name="placa" class="form-control" placeholder="ABC1D23" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo</label>
+                        <select name="tipo" class="form-select" required>
+                            <option value="">Selecione um tipo</option>
+                            <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}" th:value="${t.name()}" th:text="${t.getDescricao()}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Capacidade de Carga (kg)</label>
+                        <input type="number" step="0.1" name="capacidade" class="form-control" />
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="fechado" th:id="'addFechado' + ${user.id}" />
+                        <label class="form-check-label" th:for="'addFechado' + ${user.id}">
+                            Veículo Fechado
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Reutiliza seu footer e scripts -->
 <footer th:replace="~{fragments/navbar :: footer}"></footer>
 <div th:replace="~{fragments/navbar :: scripts}"></div>
+
+<!-- Stylesheet para botões pequenos -->
+<style>
+    .btn-xs {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+</style>
 
 <!-- Page scripts: formatting for CPF and WhatsApp fields in modals -->
 <script>

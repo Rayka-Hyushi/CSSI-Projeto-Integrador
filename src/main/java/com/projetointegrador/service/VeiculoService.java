@@ -22,6 +22,10 @@ public class VeiculoService {
         return veiculoRepository.findById(id);
     }
 
+    public List<Veiculo> buscarPorPrestadorId(Long prestadorId) {
+        return veiculoRepository.findByPrestadorId(prestadorId);
+    }
+
     public Veiculo salvar(Veiculo veiculo) {
         return veiculoRepository.save(veiculo);
     }

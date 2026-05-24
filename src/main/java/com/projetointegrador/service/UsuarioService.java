@@ -50,4 +50,9 @@ public class UsuarioService {
     public void deletar(Long id) {
         usuarioRepository.deleteById(id);
     }
+
+    // Método para atualizar usuário sem alterar necessariamente a senha
+    public Usuario salvarDirecto(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
 }

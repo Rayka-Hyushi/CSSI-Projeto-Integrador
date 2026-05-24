@@ -16,8 +16,11 @@ import com.projetointegrador.model.StatusAprovacao;
 import com.projetointegrador.model.Usuario;
 import com.projetointegrador.model.Cliente;
 import com.projetointegrador.model.Prestador;
-import com.projetointegrador.repository.SolicitacaoRepository;
+import com.projetointegrador.model.Veiculo;
 import com.projetointegrador.repository.UsuarioRepository;
+import com.projetointegrador.service.UsuarioService;
+import com.projetointegrador.service.VeiculoService;
+import com.projetointegrador.service.SolicitacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -33,13 +36,17 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     @Autowired
-    private SolicitacaoRepository solicitacaoRepository;
+    private SolicitacaoService solicitacaoService;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private VeiculoService veiculoService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private com.projetointegrador.repository.VeiculoRepository veiculoRepository;
 
     @GetMapping("/usuarios")
     public String usuarios(Model model) {
@@ -48,19 +55,19 @@ public class AdminController {
         String usernameAtual = authentication.getName();
 
         // Buscar o email/username do admin atual
-        Optional<Usuario> adminAtual = usuarioRepository.findByEmail(usernameAtual);
+        Optional<Usuario> adminAtual = usuarioService.buscarPorEmail(usernameAtual);
 
         // Filtrar todos os usuários excluindo o admin atual
-        List<Usuario> usuarios = usuarioRepository.findAll()
+        List<Usuario> usuarios = usuarioService.listarTodos()
                 .stream()
                 .filter(u -> !u.getId().equals(adminAtual.map(Usuario::getId).orElse(-1L)))
                 .collect(Collectors.toList());
 
         // Carrega veículos para prestadores (mapa: prestadorId -> lista de veículos)
-        java.util.Map<Long, java.util.List<com.projetointegrador.model.Veiculo>> veiculosMap = new java.util.HashMap<>();
+        java.util.Map<Long, List<Veiculo>> veiculosMap = new java.util.HashMap<>();
         for (Usuario u : usuarios) {
             if (u instanceof Prestador) {
-                veiculosMap.put(u.getId(), veiculoRepository.findByPrestadorId(u.getId()));
+                veiculosMap.put(u.getId(), veiculoService.buscarPorPrestadorId(u.getId()));
             }
         }
 
@@ -79,13 +86,14 @@ public class AdminController {
                                 @RequestParam(value = "fechado", required = false) String fechado,
                                 RedirectAttributes redirectAttributes) {
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(prestadorId);
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(prestadorId);
         if (usuarioOpt.isPresent() && usuarioOpt.get() instanceof Prestador prestador) {
-            com.projetointegrador.model.Veiculo v;
+            Veiculo v;
             if (id != null) {
-                v = veiculoRepository.findById(id).orElse(new com.projetointegrador.model.Veiculo());
+                v = veiculoService.buscarPorId(id)
+                        .orElseThrow(() -> new RuntimeException("Veículo não encontrado"));
             } else {
-                v = new com.projetointegrador.model.Veiculo();
+                v = new Veiculo();
             }
 
             v.setPlaca(placa);
@@ -98,7 +106,7 @@ public class AdminController {
             v.setFechado("on".equalsIgnoreCase(fechado));
             v.setPrestador(prestador);
 
-            veiculoRepository.save(v);
+            veiculoService.salvar(v);
             redirectAttributes.addFlashAttribute("sucesso", "Veículo salvo com sucesso.");
         } else {
             redirectAttributes.addFlashAttribute("erro", "Prestador não encontrado.");
@@ -109,9 +117,9 @@ public class AdminController {
 
     @PostMapping("/usuarios/veiculo/remover")
     public String removerVeiculo(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
-        java.util.Optional<com.projetointegrador.model.Veiculo> vOpt = veiculoRepository.findById(id);
+        Optional<Veiculo> vOpt = veiculoService.buscarPorId(id);
         if (vOpt.isPresent()) {
-            veiculoRepository.delete(vOpt.get());
+            veiculoService.deletar(id);
             redirectAttributes.addFlashAttribute("sucesso", "Veículo removido com sucesso.");
         } else {
             redirectAttributes.addFlashAttribute("erro", "Veículo não encontrado.");
@@ -122,11 +130,11 @@ public class AdminController {
     @GetMapping("/solicitacoes")
     public String solicitacoes(Model model) {
 
-        long totalPendentes = solicitacaoRepository.countByStatusSolicitacao(StatusAprovacao.PENDENTE);
-        long totalResolvidas = solicitacaoRepository.countByStatusSolicitacao(StatusAprovacao.APROVADO) + solicitacaoRepository.countByStatusSolicitacao(StatusAprovacao.REJEITADO);
+        long totalPendentes = solicitacaoService.contarPorStatus(StatusAprovacao.PENDENTE);
+        long totalResolvidas = solicitacaoService.contarPorStatus(StatusAprovacao.APROVADO) + solicitacaoService.contarPorStatus(StatusAprovacao.REJEITADO);
         long totalUsuarios = usuarioRepository.count();
 
-        List<Solicitacao> solicitacoesPendentes = solicitacaoRepository.findByStatusSolicitacao(StatusAprovacao.PENDENTE);
+        List<Solicitacao> solicitacoesPendentes = solicitacaoService.buscarPorStatus(StatusAprovacao.PENDENTE);
 
         model.addAttribute("totalPendentes", totalPendentes);
         model.addAttribute("totalResolvidas", totalResolvidas);
@@ -138,7 +146,7 @@ public class AdminController {
 
     @PostMapping("/solicitacoes/aprovar")
     public String aprovarSolicitacao(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
-        Optional<Solicitacao> solOpt = solicitacaoRepository.findById(id);
+        var solOpt = solicitacaoService.buscarPorId(id);
         if (solOpt.isPresent()) {
             Solicitacao s = solOpt.get();
             s.setStatusSolicitacao(StatusAprovacao.APROVADO);
@@ -155,7 +163,7 @@ public class AdminController {
                 }
             }
 
-            solicitacaoRepository.save(s);
+            solicitacaoService.atualizar(id, s);
             redirectAttributes.addFlashAttribute("sucesso", "A solicitação foi Aprovada/Finalizada.");
         }
         return "redirect:/admin/solicitacoes";
@@ -163,7 +171,7 @@ public class AdminController {
 
     @PostMapping("/solicitacoes/recusar")
     public String recusarSolicitacao(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
-        Optional<Solicitacao> solOpt = solicitacaoRepository.findById(id);
+        var solOpt = solicitacaoService.buscarPorId(id);
         if (solOpt.isPresent()) {
             Solicitacao s = solOpt.get();
             s.setStatusSolicitacao(StatusAprovacao.REJEITADO);
@@ -179,7 +187,7 @@ public class AdminController {
                 }
             }
 
-            solicitacaoRepository.save(s);
+            solicitacaoService.atualizar(id, s);
             redirectAttributes.addFlashAttribute("sucesso", "A solicitação foi Recusada. (Não esqueça de avisar o usuário por e-mail, se for o caso).");
         }
         return "redirect:/admin/solicitacoes";
@@ -190,7 +198,7 @@ public class AdminController {
                                 @RequestParam("email") String email, @RequestParam("whatsapp") String whatsapp,
                                 @RequestParam("cpf") String cpf, @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao,
                                 RedirectAttributes redirectAttributes) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             usuario.setNomeCompleto(nomeCompleto);
@@ -221,7 +229,7 @@ public class AdminController {
     @PostMapping("/usuarios/atualizar-status")
     public String atualizarStatusUsuario(@RequestParam("id") Long id, @RequestParam("status") String status,
                                          RedirectAttributes redirectAttributes) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
 

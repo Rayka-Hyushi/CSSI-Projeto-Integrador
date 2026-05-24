@@ -3,9 +3,9 @@ package com.projetointegrador.controller;
 import org.springframework.transaction.annotation.Transactional;
 import com.projetointegrador.model.Prestador;
 import com.projetointegrador.model.StatusAprovacao;
-import com.projetointegrador.repository.BairroRepository;
-import com.projetointegrador.repository.PrestadorRepository;
-import com.projetointegrador.repository.ServicoAdicionalRepository;
+import com.projetointegrador.service.BairroService;
+import com.projetointegrador.service.ServicoAdicionalService;
+import com.projetointegrador.service.PrestadorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
@@ -23,13 +23,13 @@ import java.util.Objects;
 public class ClienteController {
 
     @Autowired
-    private BairroRepository bairroRepository;
+    private BairroService bairroService;
 
     @Autowired
-    private ServicoAdicionalRepository servicoAdicionalRepository;
+    private ServicoAdicionalService servicoAdicionalService;
 
     @Autowired
-    private PrestadorRepository prestadorRepository;
+    private PrestadorService prestadorService;
 
     @GetMapping("/inicio")
     @Transactional(readOnly = true)
@@ -40,10 +40,10 @@ public class ClienteController {
             @RequestParam(value = "servicos", required = false) List<Long> servicosIds,
             Model model) {
 
-        model.addAttribute("bairros", bairroRepository.findAll());
-        model.addAttribute("servicos", servicoAdicionalRepository.findAll());
+        model.addAttribute("bairros", bairroService.listarTodos());
+        model.addAttribute("servicos", servicoAdicionalService.listarTodos());
 
-        List<Prestador> prestadores = prestadorRepository.findByStatusAprovacao(StatusAprovacao.APROVADO);
+        List<Prestador> prestadores = prestadorService.buscarPorStatus(StatusAprovacao.APROVADO);
         List<Prestador> prestadoresFiltrados = prestadores.stream()
                 .filter(prestador -> matchesBairro(prestador, origem))
                 .filter(prestador -> matchesBairro(prestador, destino))
