@@ -24,11 +24,11 @@ public class DataInitializer {
 
 	@PostConstruct
 	public void init() {
-		initializarBairros();
-		initializarServicosAdicionais();
+		inicializarBairros();
+		inicializarServicosAdicionais();
 	}
 
-	private void initializarBairros() {
+	private void inicializarBairros() {
 		if (bairroRepository.count() == 0) {
 			String[] bairros = {
 					// Bairros Urbanos (42)
@@ -56,7 +56,7 @@ public class DataInitializer {
 		}
 	}
 
-	private void initializarServicosAdicionais() {
+	private void inicializarServicosAdicionais() {
 		if (servicoAdicionalRepository.count() == 0) {
 			String[] servicos = {
 					"Ajudante para Carga e Descarga",
