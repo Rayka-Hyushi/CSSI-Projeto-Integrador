@@ -11,9 +11,11 @@
             <div>
                 <p class="cliente-home-eyebrow mb-2">Bem-vindo ao painel do cliente</p>
                 <h1 class="h3 fw-bold mb-2">Encontre prestadores de forma simples e rápida</h1>
-                <p class="text-muted mb-0">Filtre por bairros e serviços adicionais e entre em contato direto com os profissionais disponíveis.</p>
+                <p class="text-muted mb-0">Filtre por bairros e serviços adicionais e entre em contato direto com os
+                    profissionais disponíveis.</p>
             </div>
-            <div class="cliente-home-date text-muted small" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></div>
+            <div class="cliente-home-date text-muted small"
+                 th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></div>
         </div>
 
         <div class="row g-4 align-items-start">
@@ -23,7 +25,8 @@
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
                             <div>
                                 <h2 class="h4 fw-bold mb-1">O que você está procurando?</h2>
-                                <p class="text-muted mb-0">Use os filtros abaixo para localizar prestadores que atendem sua necessidade.</p>
+                                <p class="text-muted mb-0">Use os filtros abaixo para localizar prestadores que atendem
+                                    sua necessidade.</p>
                             </div>
                             <span class="badge rounded-pill text-bg-primary px-3 py-2">Santa Maria / RS</span>
                         </div>
@@ -33,40 +36,63 @@
                                 <div class="col-md-6">
                                     <label for="origem" class="form-label fw-semibold">Bairro de origem</label>
                                     <select id="origem" name="origem" class="form-select form-select-lg cliente-select">
-                                        <option value="" th:selected="${origemSelecionada == null}">Todos os bairros</option>
-                                        <option th:each="bairro : ${bairros}" th:value="${bairro.id}" th:text="${bairro.nomeBairro}" th:selected="${origemSelecionada != null and origemSelecionada == bairro.id}"></option>
+                                        <option value="" th:selected="${origemSelecionada == null}">Todos os bairros
+                                        </option>
+                                        <option th:each="bairro : ${bairros}" th:value="${bairro.id}"
+                                                th:text="${bairro.nomeBairro}"
+                                                th:selected="${origemSelecionada != null and origemSelecionada == bairro.id}"></option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label for="destino" class="form-label fw-semibold">Bairro de destino</label>
-                                    <select id="destino" name="destino" class="form-select form-select-lg cliente-select">
-                                        <option value="" th:selected="${destinoSelecionado == null}">Qualquer bairro</option>
-                                        <option th:each="bairro : ${bairros}" th:value="${bairro.id}" th:text="${bairro.nomeBairro}" th:selected="${destinoSelecionado != null and destinoSelecionado == bairro.id}"></option>
+                                    <select id="destino" name="destino"
+                                            class="form-select form-select-lg cliente-select">
+                                        <option value="" th:selected="${destinoSelecionado == null}">Qualquer bairro
+                                        </option>
+                                        <option th:each="bairro : ${bairros}" th:value="${bairro.id}"
+                                                th:text="${bairro.nomeBairro}"
+                                                th:selected="${destinoSelecionado != null and destinoSelecionado == bairro.id}"></option>
                                     </select>
                                 </div>
 
                                 <div class="col-12">
-                                    <label for="tamanhoFrete" class="form-label fw-semibold">Porte do atendimento</label>
-                                    <select id="tamanhoFrete" name="tamanhoFrete" class="form-select form-select-lg cliente-select">
-                                        <option value="" th:selected="${tamanhoFreteSelecionado == null or tamanhoFreteSelecionado.isBlank()}">Selecione uma opção</option>
-                                        <option value="PEQUENO" th:selected="${tamanhoFreteSelecionado == 'PEQUENO'}">Pequeno</option>
-                                        <option value="MEDIO" th:selected="${tamanhoFreteSelecionado == 'MEDIO'}">Médio</option>
-                                        <option value="GRANDE" th:selected="${tamanhoFreteSelecionado == 'GRANDE'}">Grande</option>
+                                    <label for="tamanhoFrete" class="form-label fw-semibold">Porte do
+                                        atendimento</label>
+                                    <select id="tamanhoFrete" name="tamanhoFrete"
+                                            class="form-select form-select-lg cliente-select">
+                                        <option value=""
+                                                th:selected="${tamanhoFreteSelecionado == null or tamanhoFreteSelecionado.isBlank()}">
+                                            Selecione uma opção
+                                        </option>
+                                        <option value="PEQUENO" th:selected="${tamanhoFreteSelecionado == 'PEQUENO'}">
+                                            Pequeno
+                                        </option>
+                                        <option value="MEDIO" th:selected="${tamanhoFreteSelecionado == 'MEDIO'}">
+                                            Médio
+                                        </option>
+                                        <option value="GRANDE" th:selected="${tamanhoFreteSelecionado == 'GRANDE'}">
+                                            Grande
+                                        </option>
                                     </select>
                                 </div>
 
                                 <div class="col-12">
                                     <div class="cliente-subtitle-wrap">
                                         <h3 class="h5 fw-bold mb-1">Serviços adicionais</h3>
-                                        <p class="text-muted mb-0">Selecione os serviços que deseja encontrar no prestador.</p>
+                                        <p class="text-muted mb-0">Selecione os serviços que deseja encontrar no
+                                            prestador.</p>
                                     </div>
 
                                     <div class="row g-3 mt-1">
                                         <div class="col-md-6 col-xl-6" th:each="servico : ${servicos}">
                                             <div class="form-check cliente-check-card">
-                                                <input class="form-check-input" type="checkbox" name="servicos" th:value="${servico.id}" th:id="'servico-' + ${servico.id}" th:checked="${servicosSelecionados.contains(servico.id)}">
-                                                <label class="form-check-label fw-semibold" th:for="'servico-' + ${servico.id}" th:text="${servico.nomeServico}"></label>
+                                                <input class="form-check-input" type="checkbox" name="servicos"
+                                                       th:value="${servico.id}" th:id="'servico-' + ${servico.id}"
+                                                       th:checked="${servicosSelecionados.contains(servico.id)}">
+                                                <label class="form-check-label fw-semibold"
+                                                       th:for="'servico-' + ${servico.id}"
+                                                       th:text="${servico.nomeServico}"></label>
                                             </div>
                                         </div>
                                     </div>
@@ -76,7 +102,8 @@
                                     <button type="submit" class="btn btn-primary btn-lg cliente-search-btn px-4">
                                         <i class="bi bi-search me-2"></i>Buscar prestadores
                                     </button>
-                                    <a th:href="@{/cliente/inicio}" class="btn btn-outline-secondary btn-lg cliente-search-btn px-4">
+                                    <a th:href="@{/cliente/inicio}"
+                                       class="btn btn-outline-secondary btn-lg cliente-search-btn px-4">
                                         Limpar filtros
                                     </a>
                                 </div>
@@ -104,7 +131,8 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <h3 class="h6 fw-bold mb-3">Dica rápida</h3>
-                        <p class="text-muted mb-0">Quanto mais filtros você usar, mais fácil fica encontrar prestadores compatíveis para entrar em contato.</p>
+                        <p class="text-muted mb-0">Quanto mais filtros você usar, mais fácil fica encontrar prestadores
+                            compatíveis para entrar em contato.</p>
                     </div>
                 </div>
             </div>
@@ -116,7 +144,8 @@
                     <h2 class="h5 fw-bold mb-1">Prestadores disponíveis</h2>
                     <p class="text-muted mb-0">Resultado da busca com contato direto, sem solicitação salva.</p>
                 </div>
-                <span class="badge text-bg-primary px-3 py-2" th:text="|${totalPrestadores} prestador(es) encontrado(s)|">0 prestador(es) encontrado(s)</span>
+                <span class="badge text-bg-primary px-3 py-2"
+                      th:text="|${totalPrestadores} prestador(es) encontrado(s)|">0 prestador(es) encontrado(s)</span>
             </div>
 
             <div class="card-body p-4">
@@ -130,7 +159,8 @@
                                          alt="Foto do prestador">
                                     <div>
                                         <h3 class="h6 fw-bold mb-1" th:text="${prestador.nomeCompleto}">Nome</h3>
-                                        <p class="text-muted small mb-0" th:text="${prestador.email}">email@exemplo.com</p>
+                                        <p class="text-muted small mb-0" th:text="${prestador.email}">
+                                            email@exemplo.com</p>
                                     </div>
                                 </div>
 
@@ -153,7 +183,8 @@
                                 </div>
 
                                 <div class="mt-auto d-grid gap-2">
-                                    <button type="button" class="btn btn-success" th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
+                                    <button type="button" class="btn btn-success"
+                                            th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
                                         <i class="bi bi-whatsapp me-1"></i> Falar no WhatsApp
                                     </button>
                                     <a class="btn btn-outline-primary" th:href="${'mailto:' + prestador.email}">

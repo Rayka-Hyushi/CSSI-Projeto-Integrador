@@ -7,12 +7,36 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border-radius: 15px; border: none; }
-        .btn-primary { border-radius: 10px; padding: 10px 30px; font-weight: bold; }
-        .form-label { font-weight: 600; color: #495057; }
-        .section-title { border-bottom: 2px solid #0d6efd; display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
-        .hidden-fields { display: none; }
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .btn-primary {
+            border-radius: 10px;
+            padding: 10px 30px;
+            font-weight: bold;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #0d6efd;
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+        }
+
+        .hidden-fields {
+            display: none;
+        }
     </style>
 </head>
 <body class="d-flex align-items-center py-5">
@@ -24,7 +48,9 @@
                 <div class="card-body p-5">
                     <div class="text-center mb-5">
                         <h2 class="fw-bold">Crie sua conta para aproveitar todos os recursos!</h2>
-                        <p class="text-muted">Preencha os dados e envie a solicitação. Sua conta poderá ser usada assim que nossa equipe comprovar a autenticidade dos dados fornecidos e aprovar sua solicitação.</p>
+                        <p class="text-muted">Preencha os dados e envie a solicitação. Sua conta poderá ser usada assim
+                            que nossa equipe comprovar a autenticidade dos dados fornecidos e aprovar sua
+                            solicitação.</p>
                     </div>
 
                     <form th:action="@{/cadastro}" method="post">
@@ -32,19 +58,23 @@
                             <!-- Basic Info -->
                             <div class="col-md-6">
                                 <label for="nomeCompleto" class="form-label">Nome Completo: (*)</label>
-                                <input type="text" class="form-control form-control-lg" id="nomeCompleto" name="nomeCompleto" placeholder="Carlos da Silva" required>
+                                <input type="text" class="form-control form-control-lg" id="nomeCompleto"
+                                       name="nomeCompleto" placeholder="Carlos da Silva" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">E-mail: (*)</label>
-                                <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="usuario@email.com" required>
+                                <input type="email" class="form-control form-control-lg" id="email" name="email"
+                                       placeholder="usuario@email.com" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="whatsapp" class="form-label">WhatsApp: (*)</label>
-                                <input type="text" class="form-control form-control-lg" id="whatsapp" name="whatsapp" placeholder="(00) 9XXXX-XXXX" maxlength="15" required>
+                                <input type="text" class="form-control form-control-lg" id="whatsapp" name="whatsapp"
+                                       placeholder="(00) 9XXXX-XXXX" maxlength="15" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="cpf" class="form-label">CPF: (*)</label>
-                                <input type="text" class="form-control form-control-lg" id="cpf" name="cpf" placeholder="000.000.000-00" maxlength="14" required>
+                                <input type="text" class="form-control form-control-lg" id="cpf" name="cpf"
+                                       placeholder="000.000.000-00" maxlength="14" required>
                             </div>
                         </div>
 
@@ -52,18 +82,21 @@
                             <div class="col-md-4">
                                 <label class="form-label d-block">Tipo de Usuário: (*)</label>
                                 <div class="form-check form-check-inline mt-2">
-                                    <input class="form-check-input" type="radio" name="tipoUsuario" id="tipoCliente" value="ROLE_CLIENTE" checked onchange="togglePrestadorFields()">
+                                    <input class="form-check-input" type="radio" name="tipoUsuario" id="tipoCliente"
+                                           value="ROLE_CLIENTE" checked onchange="togglePrestadorFields()">
                                     <label class="form-check-label" for="tipoCliente">Cliente</label>
                                 </div>
                                 <div class="form-check form-check-inline mt-2">
-                                    <input class="form-check-input" type="radio" name="tipoUsuario" id="tipoPrestador" value="ROLE_PRESTADOR" onchange="togglePrestadorFields()">
+                                    <input class="form-check-input" type="radio" name="tipoUsuario" id="tipoPrestador"
+                                           value="ROLE_PRESTADOR" onchange="togglePrestadorFields()">
                                     <label class="form-check-label" for="tipoPrestador">Prestador</label>
                                 </div>
                             </div>
 
                             <div class="col-md-8">
                                 <label for="senha" class="form-label">Crie uma senha: (*)</label>
-                                <input type="password" class="form-control form-control-lg" id="senha" name="senha" required>
+                                <input type="password" class="form-control form-control-lg" id="senha" name="senha"
+                                       required>
                             </div>
                         </div>
 
@@ -73,7 +106,8 @@
                             <div class="row g-4 mb-4">
                                 <div class="col-md-3">
                                     <label for="placaVeiculo" class="form-label">Placa do Veículo: (*)</label>
-                                    <input type="text" class="form-control" id="placaVeiculo" name="placaVeiculo" placeholder="BRA0X23">
+                                    <input type="text" class="form-control" id="placaVeiculo" name="placaVeiculo"
+                                           placeholder="BRA0X23">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="tipoVeiculo" class="form-label">Tipo de Veículo: (*)</label>
@@ -85,18 +119,21 @@
                                 <div class="col-md-3">
                                     <label for="capacidadeModel" class="form-label">Capacidade de Carga: (*)</label>
                                     <div class="input-group">
-                                        <input type="number" class="form-control" id="capacidadeModel" name="capacidadeModel" placeholder="3000">
+                                        <input type="number" class="form-control" id="capacidadeModel"
+                                               name="capacidadeModel" placeholder="3000">
                                         <span class="input-group-text">KG</span>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label d-block">Aberto ou fechado: (*)</label>
                                     <div class="form-check form-check-inline mt-2">
-                                        <input class="form-check-input" type="radio" name="abertoFechado" id="statusAberto" value="ABERTO" checked>
+                                        <input class="form-check-input" type="radio" name="abertoFechado"
+                                               id="statusAberto" value="ABERTO" checked>
                                         <label class="form-check-label" for="statusAberto">Aberto</label>
                                     </div>
                                     <div class="form-check form-check-inline mt-2">
-                                        <input class="form-check-input" type="radio" name="abertoFechado" id="statusFechado" value="FECHADO">
+                                        <input class="form-check-input" type="radio" name="abertoFechado"
+                                               id="statusFechado" value="FECHADO">
                                         <label class="form-check-label" for="statusFechado">Fechado</label>
                                     </div>
                                 </div>
@@ -108,8 +145,10 @@
                                     <div class="row row-cols-1 row-cols-md-1 g-2">
                                         <div class="col" th:each="servico : ${servicos}">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="servicos" th:value="${servico.id}" th:id="'servico' + ${servico.id}">
-                                                <label class="form-check-label" th:for="'servico' + ${servico.id}" th:text="${servico.nomeServico}"></label>
+                                                <input class="form-check-input" type="checkbox" name="servicos"
+                                                       th:value="${servico.id}" th:id="'servico' + ${servico.id}">
+                                                <label class="form-check-label" th:for="'servico' + ${servico.id}"
+                                                       th:text="${servico.nomeServico}"></label>
                                             </div>
                                         </div>
                                     </div>
@@ -119,8 +158,10 @@
                                     <div class="card bg-light">
                                         <div class="card-body" style="max-height: 200px; overflow-y: auto;">
                                             <div class="form-check" th:each="bairro : ${bairros}">
-                                                <input class="form-check-input" type="checkbox" name="bairros" th:value="${bairro.id}" th:id="'bairro' + ${bairro.id}">
-                                                <label class="form-check-label" th:for="'bairro' + ${bairro.id}" th:text="${bairro.nomeBairro}"></label>
+                                                <input class="form-check-input" type="checkbox" name="bairros"
+                                                       th:value="${bairro.id}" th:id="'bairro' + ${bairro.id}">
+                                                <label class="form-check-label" th:for="'bairro' + ${bairro.id}"
+                                                       th:text="${bairro.nomeBairro}"></label>
                                             </div>
                                         </div>
                                     </div>
@@ -129,7 +170,8 @@
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-5">
-                            <a th:href="@{/}" class="text-decoration-none text-muted"><i class="bi bi-arrow-left me-1"></i> Voltar para Login</a>
+                            <a th:href="@{/}" class="text-decoration-none text-muted"><i
+                                    class="bi bi-arrow-left me-1"></i> Voltar para Login</a>
                             <button type="submit" class="btn btn-primary btn-lg">Solicitar Cadastro</button>
                         </div>
                     </form>
@@ -193,15 +235,15 @@
     }
 
     // Adicionar event listeners ao carregar a página
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const cpfInput = document.getElementById('cpf');
         const whatsappInput = document.getElementById('whatsapp');
 
-        cpfInput.addEventListener('input', function() {
+        cpfInput.addEventListener('input', function () {
             formatarCPF(this);
         });
 
-        whatsappInput.addEventListener('input', function() {
+        whatsappInput.addEventListener('input', function () {
             formatarWhatsApp(this);
         });
     });

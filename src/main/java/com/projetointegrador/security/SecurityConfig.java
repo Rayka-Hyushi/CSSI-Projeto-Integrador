@@ -1,21 +1,15 @@
 package com.projetointegrador.security;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-
-import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -24,16 +18,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain customSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/cadastro", "/css/**", "/js/**", "/h2-console/**", "/uploads/**")
+                        .requestMatchers("/", "/login", "/cadastro", "/setup", "/setup/**", "/css/**", "/js/**", "/uploads/**")
                         .permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/cliente/**").hasRole("CLIENTE")
                         .requestMatchers("/prestador/**").hasRole("PRESTADOR")
                         .anyRequest().authenticated()
                 )
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // Necessário para o H2 renderizar no navegador;
                 .formLogin(form -> form
                         .loginPage("/")
                         .loginProcessingUrl("/login")

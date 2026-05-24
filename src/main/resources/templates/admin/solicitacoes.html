@@ -88,14 +88,25 @@
                         </tr>
 
                         <tr th:each="sol : ${solicitacoes}">
-                            <td><strong th:text="${sol.usuario != null ? sol.usuario.nomeCompleto : 'Usuário não vinculado'}">Nome</strong></td>
-                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.email : '-'}">email@teste.com</td>
-                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.whatsapp : '-'}">(00) 0000-0000</td>
-                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.cpf : '-'}">000.000.000-00</td>
-                            <td><span class="badge bg-warning text-dark" th:text="${sol.tipoSolicitacao.name()}">CADASTRO</span></td>
-                            <td><span class="badge bg-secondary" th:text="${sol.statusSolicitacao.name()}">PENDENTE</span></td>
+                            <td><strong
+                                    th:text="${sol.usuario != null ? sol.usuario.nomeCompleto : 'Usuário não vinculado'}">Nome</strong>
+                            </td>
+                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.email : '-'}">
+                                email@teste.com
+                            </td>
+                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.whatsapp : '-'}">
+                                (00) 0000-0000
+                            </td>
+                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.cpf : '-'}">
+                                000.000.000-00
+                            </td>
+                            <td><span class="badge bg-warning text-dark" th:text="${sol.tipoSolicitacao.name()}">CADASTRO</span>
+                            </td>
+                            <td><span class="badge bg-secondary"
+                                      th:text="${sol.statusSolicitacao.name()}">PENDENTE</span></td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" th:data-bs-target="'#verificarModal' + ${sol.id}">
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                        th:data-bs-target="'#verificarModal' + ${sol.id}">
                                     <i class="bi bi-eye"></i> Verificar
                                 </button>
                             </td>
@@ -109,7 +120,8 @@
 </main>
 
 <!-- Modais de Verificação dinâmicos -->
-<div th:each="sol : ${solicitacoes}" class="modal fade" th:id="'verificarModal' + ${sol.id}" tabindex="-1" aria-hidden="true">
+<div th:each="sol : ${solicitacoes}" class="modal fade" th:id="'verificarModal' + ${sol.id}" tabindex="-1"
+     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -119,18 +131,23 @@
             <div class="modal-body">
                 <p><strong>Tipo:</strong> <span th:text="${sol.tipoSolicitacao.name()}"></span></p>
                 <p><strong>Status:</strong> <span th:text="${sol.statusSolicitacao.name()}"></span></p>
-                <p><strong>Nome:</strong> <span th:text="${sol.usuario != null ? sol.usuario.nomeCompleto : 'Usuário não vinculado'}"></span></p>
+                <p><strong>Nome:</strong> <span
+                        th:text="${sol.usuario != null ? sol.usuario.nomeCompleto : 'Usuário não vinculado'}"></span>
+                </p>
                 <p><strong>E-mail:</strong> <span th:text="${sol.usuario != null ? sol.usuario.email : '-'}"></span></p>
-                <p><strong>WhatsApp:</strong> <span th:text="${sol.usuario != null ? sol.usuario.whatsapp : '-'}"></span></p>
+                <p><strong>WhatsApp:</strong> <span
+                        th:text="${sol.usuario != null ? sol.usuario.whatsapp : '-'}"></span></p>
                 <p><strong>CPF:</strong> <span th:text="${sol.usuario != null ? sol.usuario.cpf : '-'}"></span></p>
                 <div class="mb-3">
                     <label th:for="${'detalhesSolicitacao' + sol.id}" class="fw-bold">Mensagem / Detalhes:</label>
-                    <textarea th:id="${'detalhesSolicitacao' + sol.id}" class="form-control" rows="4" readonly style="background-color:#f8f9fa;" th:text="${sol.detalhes}"></textarea>
+                    <textarea th:id="${'detalhesSolicitacao' + sol.id}" class="form-control" rows="4" readonly
+                              style="background-color:#f8f9fa;" th:text="${sol.detalhes}"></textarea>
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
                 <div>
-                     <p class="text-muted small mb-0" th:if="${sol.tipoSolicitacao.name() == 'CADASTRO'}"><i>* Lembre de enviar e-mail se recusar</i></p>
+                    <p class="text-muted small mb-0" th:if="${sol.tipoSolicitacao.name() == 'CADASTRO'}"><i>* Lembre de
+                        enviar e-mail se recusar</i></p>
                 </div>
 
                 <div class="d-flex gap-2">
@@ -143,7 +160,10 @@
                     <!-- Form Aprovar / Finalizar -->
                     <form th:action="@{/admin/solicitacoes/aprovar}" method="post">
                         <input type="hidden" name="id" th:value="${sol.id}">
-                        <button type="submit" class="btn btn-success" th:text="${sol.tipoSolicitacao.name() == 'CADASTRO' ? 'Aprovar Cadastro' : 'Finalizar Solicitação'}">Aprovar Cadastro</button>
+                        <button type="submit" class="btn btn-success"
+                                th:text="${sol.tipoSolicitacao.name() == 'CADASTRO' ? 'Aprovar Cadastro' : 'Finalizar Solicitação'}">
+                            Aprovar Cadastro
+                        </button>
                     </form>
                 </div>
             </div>

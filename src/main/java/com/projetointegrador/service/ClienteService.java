@@ -1,7 +1,7 @@
 package com.projetointegrador.service;
 
 import com.projetointegrador.model.Cliente;
-import com.projetointegrador.model.Prestador;
+import com.projetointegrador.model.StatusAprovacao;
 import com.projetointegrador.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,5 +49,12 @@ public class ClienteService {
 
     public void deletar(Long id) {
         clienteRepository.deleteById(id);
+    }
+
+    public Cliente atualizarStatus(Long id, StatusAprovacao status) {
+        return clienteRepository.findById(id).map(cliente -> {
+            cliente.setStatusAprovacao(status);
+            return clienteRepository.save(cliente);
+        }).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
     }
 }

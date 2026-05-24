@@ -1,7 +1,7 @@
 package com.projetointegrador.controller;
 
 import com.projetointegrador.model.Usuario;
-import com.projetointegrador.repository.UsuarioRepository;
+import com.projetointegrador.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,7 +17,7 @@ import java.util.Optional;
 public class GlobalControllerAdvice {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UsuarioService usuarioService;
 
     @ModelAttribute("usuario")
     public Usuario getUsuarioLogado() {
@@ -26,7 +26,7 @@ public class GlobalControllerAdvice {
         if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
             String userEmail = auth.getName();
 
-            Optional<Usuario> userOpt = usuarioRepository.findByEmail(userEmail);
+            Optional<Usuario> userOpt = usuarioService.buscarPorEmail(userEmail);
             if (userOpt.isPresent()) {
                 return userOpt.get();
             }

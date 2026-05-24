@@ -31,7 +31,10 @@ public class UsuarioService {
     }
 
     public Usuario salvar(Usuario usuario) {
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        // Apenas encripta se houver senha (controllers não devem encriptar)
+        if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
+            usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        }
         return usuarioRepository.save(usuario);
     }
 
@@ -51,8 +54,7 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
-    // Método para atualizar usuário sem alterar necessariamente a senha
-    public Usuario salvarDirecto(Usuario usuario) {
-        return usuarioRepository.save(usuario);
+    public long contar() {
+        return usuarioRepository.count();
     }
 }

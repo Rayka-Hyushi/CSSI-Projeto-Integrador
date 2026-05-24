@@ -52,4 +52,11 @@ public class PrestadorService {
     public void deletar(Long id) {
         prestadorRepository.deleteById(id);
     }
+
+    public Prestador atualizarStatus(Long id, StatusAprovacao status) {
+        return prestadorRepository.findById(id).map(prestador -> {
+            prestador.setStatusAprovacao(status);
+            return prestadorRepository.save(prestador);
+        }).orElseThrow(() -> new RuntimeException("Prestador não encontrado"));
+    }
 }

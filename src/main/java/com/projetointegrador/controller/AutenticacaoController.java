@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.projetointegrador.model.*;
 import com.projetointegrador.service.*;
@@ -41,10 +40,15 @@ public class AutenticacaoController {
     private SolicitacaoService solicitacaoService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private UsuarioService usuarioService;
 
     @GetMapping("/")
     public String login(Authentication authentication) {
+        // Se não houver nenhum usuário no sistema, redireciona para setup
+        if (usuarioService.contar() == 0) {
+            return "redirect:/setup";
+        }
+
         if (authentication != null && authentication.isAuthenticated()) {
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
@@ -103,7 +107,7 @@ public class AutenticacaoController {
             p.setEmail(email);
             p.setWhatsapp(whatsapp);
             p.setCpf(cpf);
-            p.setSenha(passwordEncoder.encode(senha));
+            p.setSenha(senha);
             p.setTipoUsuario(tipoUsuario);
 
             // Bairros
@@ -123,7 +127,7 @@ public class AutenticacaoController {
             prestadorService.salvar(p);
 
             // Veiculo se existir informações
-            if(placaVeiculo != null && !placaVeiculo.isBlank()){
+            if (placaVeiculo != null && !placaVeiculo.isBlank()) {
                 Veiculo v = new Veiculo();
                 v.setPrestador(p);
                 v.setPlaca(placaVeiculo);
@@ -141,7 +145,7 @@ public class AutenticacaoController {
             c.setEmail(email);
             c.setWhatsapp(whatsapp);
             c.setCpf(cpf);
-            c.setSenha(passwordEncoder.encode(senha));
+            c.setSenha(senha);
             c.setTipoUsuario(tipoUsuario);
             clienteService.salvar(c);
 
@@ -154,9 +158,12 @@ public class AutenticacaoController {
         sol.setUsuario(novoUsuario);
         sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
 
-        String formDetalhes = "Nova conta tipo: " + tipoUsuario.name() + "\n";
-        if(isPrestador) {
-             formDetalhes += "Placa: " + placaVeiculo + "\n";
+        String formDetalhes = "Solicita-se cadastro de nova conta. \nTipo de conta: " + tipoUsuario.name();
+        if (isPrestador) {
+            formDetalhes += "\nPlaca: " + placaVeiculo;
+	        formDetalhes += "\nTipo de Veículo: " + TipoVeiculo.valueOf(tipoVeiculoStr);
+			formDetalhes += "\nCapacidade: " + capacidade;
+	        formDetalhes += "\nCarroceria: " + abertoFechadoStr;
         }
         sol.setDetalhes(formDetalhes);
         solicitacaoService.criar(sol);

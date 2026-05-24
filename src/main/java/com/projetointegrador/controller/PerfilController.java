@@ -7,7 +7,6 @@ import com.projetointegrador.model.TipoSolicitacao;
 import com.projetointegrador.service.UsuarioService;
 import com.projetointegrador.service.SolicitacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,9 +30,6 @@ public class PerfilController {
 
     @Autowired
     private SolicitacaoService solicitacaoService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     private static final String UPLOAD_DIR = "uploads/";
 
@@ -73,7 +69,7 @@ public class PerfilController {
             if (usuarioOpt.isPresent()) {
                 Usuario usuario = usuarioOpt.get();
                 usuario.setProfilePhotoUrl("/uploads/" + fileName);
-                usuarioService.salvarDirecto(usuario);
+                usuarioService.salvar(usuario);
                 redirectAttributes.addFlashAttribute("sucesso", "Foto de perfil atualizada com sucesso!");
             }
 
@@ -95,10 +91,10 @@ public class PerfilController {
                                       RedirectAttributes redirectAttributes) {
 
         Optional<Usuario> userOpt = usuarioService.buscarPorEmail(authentication.getName());
-        if(userOpt.isPresent()) {
+        if (userOpt.isPresent()) {
             Usuario u = userOpt.get();
             // Permite atualizar apenas se for admin.
-            if(authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
                 u.setNomeCompleto(nome);
                 u.setEmail(email);
                 u.setWhatsapp(whatsapp);
@@ -107,16 +103,16 @@ public class PerfilController {
                 }
 
                 if (novaSenha != null && !novaSenha.isBlank()) {
-                    u.setSenha(passwordEncoder.encode(novaSenha));
+                    u.setSenha(novaSenha);  // Service vai encriptar
                 }
 
-                usuarioService.salvarDirecto(u);
+                usuarioService.salvar(u);
                 redirectAttributes.addFlashAttribute("sucesso", "Dados atualizados com sucesso!");
             } else {
                 // Se for um usuário comum, permite apenas atualizar a senha
                 if (novaSenha != null && !novaSenha.isBlank()) {
-                    u.setSenha(passwordEncoder.encode(novaSenha));
-                    usuarioService.salvarDirecto(u);
+                    u.setSenha(novaSenha);
+                    usuarioService.salvar(u);
                     redirectAttributes.addFlashAttribute("sucesso", "Senha atualizada com sucesso!");
                 } else {
                     redirectAttributes.addFlashAttribute("erro", "Você não tem permissão para alterar estes dados.");
@@ -178,9 +174,9 @@ public class PerfilController {
                 sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
                 sol.setDetalhes(
                         "Solicitação de recuperação de senha via tela de login.\n" +
-                        "Nome informado: " + nome + "\n" +
-                        "CPF informado: " + cpf + "\n" +
-                        "E-mail informado: " + email
+                                "Nome informado: " + nome + "\n" +
+                                "CPF informado: " + cpf + "\n" +
+                                "E-mail informado: " + email
                 );
 
                 solicitacaoService.criar(sol);

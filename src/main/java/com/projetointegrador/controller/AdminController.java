@@ -17,10 +17,11 @@ import com.projetointegrador.model.Usuario;
 import com.projetointegrador.model.Cliente;
 import com.projetointegrador.model.Prestador;
 import com.projetointegrador.model.Veiculo;
-import com.projetointegrador.repository.UsuarioRepository;
 import com.projetointegrador.service.UsuarioService;
 import com.projetointegrador.service.VeiculoService;
 import com.projetointegrador.service.SolicitacaoService;
+import com.projetointegrador.service.ClienteService;
+import com.projetointegrador.service.PrestadorService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -45,7 +46,10 @@ public class AdminController {
     private VeiculoService veiculoService;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private ClienteService clienteService;
+
+    @Autowired
+    private PrestadorService prestadorService;
 
 
     @GetMapping("/usuarios")
@@ -132,7 +136,7 @@ public class AdminController {
 
         long totalPendentes = solicitacaoService.contarPorStatus(StatusAprovacao.PENDENTE);
         long totalResolvidas = solicitacaoService.contarPorStatus(StatusAprovacao.APROVADO) + solicitacaoService.contarPorStatus(StatusAprovacao.REJEITADO);
-        long totalUsuarios = usuarioRepository.count();
+        long totalUsuarios = usuarioService.contar();
 
         List<Solicitacao> solicitacoesPendentes = solicitacaoService.buscarPorStatus(StatusAprovacao.PENDENTE);
 
@@ -154,12 +158,10 @@ public class AdminController {
             // Se for de cadastro ou outro que envolva usuário com pendência, altera para aprovado
             Usuario u = s.getUsuario();
             if (u != null) {
-                if (u instanceof Cliente) {
-                    ((Cliente) u).setStatusAprovacao(StatusAprovacao.APROVADO);
-                    usuarioRepository.save(u);
-                } else if (u instanceof Prestador) {
-                    ((Prestador) u).setStatusAprovacao(StatusAprovacao.APROVADO);
-                    usuarioRepository.save(u);
+                if (u instanceof Cliente cliente) {
+                    clienteService.atualizarStatus(cliente.getId(), StatusAprovacao.APROVADO);
+                } else if (u instanceof Prestador prestador) {
+                    prestadorService.atualizarStatus(prestador.getId(), StatusAprovacao.APROVADO);
                 }
             }
 
@@ -178,12 +180,10 @@ public class AdminController {
 
             Usuario u = s.getUsuario();
             if (u != null) {
-                if (u instanceof Cliente) {
-                    ((Cliente) u).setStatusAprovacao(StatusAprovacao.REJEITADO);
-                    usuarioRepository.save(u);
-                } else if (u instanceof Prestador) {
-                    ((Prestador) u).setStatusAprovacao(StatusAprovacao.REJEITADO);
-                    usuarioRepository.save(u);
+                if (u instanceof Cliente cliente) {
+                    clienteService.atualizarStatus(cliente.getId(), StatusAprovacao.REJEITADO);
+                } else if (u instanceof Prestador prestador) {
+                    prestadorService.atualizarStatus(prestador.getId(), StatusAprovacao.REJEITADO);
                 }
             }
 
@@ -210,17 +210,18 @@ public class AdminController {
             if (statusAprovacao != null) {
                 try {
                     StatusAprovacao status = StatusAprovacao.valueOf(statusAprovacao);
-                    if (usuario instanceof Cliente) {
-                        ((Cliente) usuario).setStatusAprovacao(status);
-                    } else if (usuario instanceof Prestador) {
-                        ((Prestador) usuario).setStatusAprovacao(status);
+                    if (usuario instanceof Cliente cliente) {
+                        clienteService.atualizarStatus(cliente.getId(), status);
+                    } else if (usuario instanceof Prestador prestador) {
+                        prestadorService.atualizarStatus(prestador.getId(), status);
                     }
                 } catch (IllegalArgumentException e) {
                     // Status inválido, ignora
                 }
+            } else {
+                usuarioService.salvar(usuario);
             }
 
-            usuarioRepository.save(usuario);
             redirectAttributes.addFlashAttribute("sucesso", "Dados do usuário atualizados com sucesso!");
         }
         return "redirect:/admin/usuarios";
@@ -235,12 +236,11 @@ public class AdminController {
 
             try {
                 StatusAprovacao novoStatus = StatusAprovacao.valueOf(status);
-                if (usuario instanceof Cliente) {
-                    ((Cliente) usuario).setStatusAprovacao(novoStatus);
-                } else if (usuario instanceof Prestador) {
-                    ((Prestador) usuario).setStatusAprovacao(novoStatus);
+                if (usuario instanceof Cliente cliente) {
+                    clienteService.atualizarStatus(cliente.getId(), novoStatus);
+                } else if (usuario instanceof Prestador prestador) {
+                    prestadorService.atualizarStatus(prestador.getId(), novoStatus);
                 }
-                usuarioRepository.save(usuario);
 
                 String mensagem = novoStatus == StatusAprovacao.APROVADO ?
                         "Usuário ativado com sucesso!" :
