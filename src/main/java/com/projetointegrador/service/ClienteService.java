@@ -32,9 +32,13 @@ public class ClienteService {
     }
 
     public Cliente salvar(Cliente cliente) {
-		if (cliente.getSenha() != null) {
-			cliente.setSenha(passwordEncoder.encode(cliente.getSenha()));
-		}
+        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com $2a$, $2b$ ou $2y$)
+        if (cliente.getSenha() != null && !cliente.getSenha().isEmpty()) {
+            String senha = cliente.getSenha();
+            if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+                cliente.setSenha(passwordEncoder.encode(senha));
+            }
+        }
         return clienteRepository.save(cliente);
     }
 

@@ -32,9 +32,13 @@ public class PrestadorService {
     }
 
     public Prestador salvar(Prestador prestador) {
-		if (prestador.getSenha() != null) {
-			prestador.setSenha(passwordEncoder.encode(prestador.getSenha()));
-		}
+        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com $2a$, $2b$ ou $2y$)
+        if (prestador.getSenha() != null && !prestador.getSenha().isEmpty()) {
+            String senha = prestador.getSenha();
+            if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+                prestador.setSenha(passwordEncoder.encode(senha));
+            }
+        }
         return prestadorRepository.save(prestador);
     }
 

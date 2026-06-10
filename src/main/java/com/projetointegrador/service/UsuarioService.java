@@ -31,9 +31,12 @@ public class UsuarioService {
     }
 
     public Usuario salvar(Usuario usuario) {
-        // Apenas encripta se houver senha (controllers não devem encriptar)
+        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com $2a$, $2b$ ou $2y$)
         if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
-            usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+            String senha = usuario.getSenha();
+            if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+                usuario.setSenha(passwordEncoder.encode(senha));
+            }
         }
         return usuarioRepository.save(usuario);
     }
