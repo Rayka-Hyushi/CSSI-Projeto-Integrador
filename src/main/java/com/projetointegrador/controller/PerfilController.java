@@ -98,6 +98,7 @@ public class PerfilController {
                 u.setNomeCompleto(nome);
                 u.setEmail(email);
                 u.setWhatsapp(whatsapp);
+
                 if (cpf != null && !cpf.isBlank()) {
                     u.setCpf(cpf);
                 }

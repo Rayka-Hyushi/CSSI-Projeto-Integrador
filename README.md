@@ -18,13 +18,13 @@ Repositório para desenvolvimento da aplicação do Projeto Integrador com exten
 
 ---
 
-## Iniciar o container do banco de dados
+## Iniciar os containers da aplicação e do banco
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-Após o container do banco estiver rodando, basta iniciar a aplicação através do localhost.
+Quando os containers estiverem rodando, basta iniciar a aplicação através do localhost.
 
-Acesse: [http://localhost:8080](http://localhost:8080
+Acesse: http://localhost:8080
 

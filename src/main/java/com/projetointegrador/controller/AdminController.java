@@ -136,7 +136,7 @@ public class AdminController {
 
         long totalPendentes = solicitacaoService.contarPorStatus(StatusAprovacao.PENDENTE);
         long totalResolvidas = solicitacaoService.contarPorStatus(StatusAprovacao.APROVADO) + solicitacaoService.contarPorStatus(StatusAprovacao.REJEITADO);
-        long totalUsuarios = usuarioService.contar();
+        long totalUsuarios = usuarioService.contarUsuariosAtivos();
 
         List<Solicitacao> solicitacoesPendentes = solicitacaoService.buscarPorStatus(StatusAprovacao.PENDENTE);
 
