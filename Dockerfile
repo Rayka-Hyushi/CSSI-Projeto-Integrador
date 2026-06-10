@@ -14,7 +14,7 @@ RUN mvn clean package -DskipTests -Dmaven.test.skip=true
 
 # ===== STAGE 2: Runtime =====
 # Imagem leve apenas com Java 21 para rodar a app
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:21-jre-alpine
 
 # Define o diretório de trabalho dentro do container
 WORKDIR /app
