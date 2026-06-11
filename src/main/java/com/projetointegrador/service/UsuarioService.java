@@ -46,7 +46,12 @@ public class UsuarioService {
             usuario.setNomeCompleto(usuarioAtualizado.getNomeCompleto());
             usuario.setEmail(usuarioAtualizado.getEmail());
             if (usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().isEmpty()) {
-                usuario.setSenha(passwordEncoder.encode(usuarioAtualizado.getSenha()));
+                String senha = usuarioAtualizado.getSenha();
+                if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+                    usuario.setSenha(passwordEncoder.encode(senha));
+                } else {
+                    usuario.setSenha(senha);
+                }
             }
             usuario.setWhatsapp(usuarioAtualizado.getWhatsapp());
             return usuarioRepository.save(usuario);

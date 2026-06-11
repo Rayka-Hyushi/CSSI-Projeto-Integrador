@@ -53,28 +53,34 @@
                             solicitação.</p>
                     </div>
 
+                    <!-- Mensagem de Erro do Servidor -->
+                    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle"></i> <strong th:text="${erro}">Erro!</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
                     <form th:action="@{/cadastro}" method="post" onsubmit="return validarForm(event)">
                         <div class="row g-4 mb-4">
                             <!-- Basic Info -->
                             <div class="col-md-6">
                                 <label for="nomeCompleto" class="form-label">Nome Completo: (*)</label>
                                 <input type="text" class="form-control form-control-lg" id="nomeCompleto"
-                                       name="nomeCompleto" placeholder="Carlos da Silva" required>
+                                       name="nomeCompleto" th:value="${nomeCompleto}" placeholder="Carlos da Silva" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">E-mail: (*)</label>
                                 <input type="email" class="form-control form-control-lg" id="email" name="email"
-                                       placeholder="usuario@email.com" required>
+                                       th:value="${email}" placeholder="usuario@email.com" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="whatsapp" class="form-label">WhatsApp: (*)</label>
                                 <input type="text" class="form-control form-control-lg" id="whatsapp" name="whatsapp"
-                                       placeholder="(00) 9XXXX-XXXX" maxlength="15" required>
+                                       th:value="${whatsapp}" placeholder="(00) 9XXXX-XXXX" maxlength="15" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="cpf" class="form-label">CPF: (*)</label>
                                 <input type="text" class="form-control form-control-lg" id="cpf" name="cpf"
-                                       placeholder="000.000.000-00" maxlength="14" required>
+                                       th:value="${cpf}" placeholder="000.000.000-00" maxlength="14" required>
                             </div>
                         </div>
 
@@ -83,12 +89,12 @@
                                 <label class="form-label d-block">Tipo de Usuário: (*)</label>
                                 <div class="form-check form-check-inline mt-2">
                                     <input class="form-check-input" type="radio" name="tipoUsuario" id="tipoCliente"
-                                           value="ROLE_CLIENTE" checked onchange="togglePrestadorFields()">
+                                           value="ROLE_CLIENTE" th:checked="${tipoUsuario == null || tipoUsuario == 'ROLE_CLIENTE'}" onchange="togglePrestadorFields()">
                                     <label class="form-check-label" for="tipoCliente">Cliente</label>
                                 </div>
                                 <div class="form-check form-check-inline mt-2">
                                     <input class="form-check-input" type="radio" name="tipoUsuario" id="tipoPrestador"
-                                           value="ROLE_PRESTADOR" onchange="togglePrestadorFields()">
+                                           value="ROLE_PRESTADOR" th:checked="${tipoUsuario == 'ROLE_PRESTADOR'}" onchange="togglePrestadorFields()">
                                     <label class="form-check-label" for="tipoPrestador">Prestador</label>
                                 </div>
                             </div>
@@ -101,26 +107,26 @@
                         </div>
 
                         <!-- Prestador Specific Fields -->
-                        <div id="prestadorFields" class="hidden-fields">
+                        <div id="prestadorFields" th:classappend="${tipoUsuario == 'ROLE_PRESTADOR' ? '' : 'hidden-fields'}" class="hidden-fields">
                             <h5 class="section-title">Dados do Veículo</h5>
                             <div class="row g-4 mb-4">
                                 <div class="col-md-3">
                                     <label for="placaVeiculo" class="form-label">Placa do Veículo: (*)</label>
                                     <input type="text" class="form-control" id="placaVeiculo" name="placaVeiculo"
-                                           placeholder="BRA0X23">
+                                           th:value="${placaVeiculo}" placeholder="BRA0X23">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="tipoVeiculo" class="form-label">Tipo de Veículo: (*)</label>
                                     <select class="form-select" id="tipoVeiculo" name="tipoVeiculo">
                                         <option th:each="tipo : ${T(com.projetointegrador.model.TipoVeiculo).values()}"
-                                                th:value="${tipo}" th:text="${tipo}"></option>
+                                                th:value="${tipo}" th:text="${tipo}" th:selected="${tipo.name() == tipoVeiculo}"></option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <label for="capacidadeModel" class="form-label">Capacidade de Carga: (*)</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control" id="capacidadeModel"
-                                               name="capacidadeModel" placeholder="3000">
+                                               name="capacidadeModel" th:value="${capacidadeModel}" placeholder="3000">
                                         <span class="input-group-text">KG</span>
                                     </div>
                                 </div>
@@ -128,12 +134,12 @@
                                     <label class="form-label d-block">Aberto ou fechado: (*)</label>
                                     <div class="form-check form-check-inline mt-2">
                                         <input class="form-check-input" type="radio" name="abertoFechado"
-                                               id="statusAberto" value="ABERTO" checked>
+                                               id="statusAberto" value="ABERTO" th:checked="${abertoFechado == null || abertoFechado == 'ABERTO'}">
                                         <label class="form-check-label" for="statusAberto">Aberto</label>
                                     </div>
                                     <div class="form-check form-check-inline mt-2">
                                         <input class="form-check-input" type="radio" name="abertoFechado"
-                                               id="statusFechado" value="FECHADO">
+                                               id="statusFechado" value="FECHADO" th:checked="${abertoFechado == 'FECHADO'}">
                                         <label class="form-check-label" for="statusFechado">Fechado</label>
                                     </div>
                                 </div>
@@ -146,7 +152,8 @@
                                         <div class="col" th:each="servico : ${servicos}">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="servicos"
-                                                       th:value="${servico.id}" th:id="'servico' + ${servico.id}">
+                                                       th:value="${servico.id}" th:id="'servico' + ${servico.id}"
+                                                       th:checked="${servicosIds != null && servicosIds.contains(servico.id)}">
                                                 <label class="form-check-label" th:for="'servico' + ${servico.id}"
                                                        th:text="${servico.nomeServico}"></label>
                                             </div>
@@ -159,7 +166,8 @@
                                         <div class="card-body" style="max-height: 200px; overflow-y: auto;">
                                             <div class="form-check" th:each="bairro : ${bairros}">
                                                 <input class="form-check-input" type="checkbox" name="bairros"
-                                                       th:value="${bairro.id}" th:id="'bairro' + ${bairro.id}">
+                                                       th:value="${bairro.id}" th:id="'bairro' + ${bairro.id}"
+                                                       th:checked="${bairrosIds != null && bairrosIds.contains(bairro.id)}">
                                                 <label class="form-check-label" th:for="'bairro' + ${bairro.id}"
                                                        th:text="${bairro.nomeBairro}"></label>
                                             </div>

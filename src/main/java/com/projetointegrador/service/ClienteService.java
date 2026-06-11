@@ -50,7 +50,12 @@ public class ClienteService {
             }
             cliente.setEmail(clienteAtualizado.getEmail());
             if (clienteAtualizado.getSenha() != null && !clienteAtualizado.getSenha().isEmpty()) {
-                cliente.setSenha(passwordEncoder.encode(clienteAtualizado.getSenha()));
+                String senha = clienteAtualizado.getSenha();
+                if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+                    cliente.setSenha(passwordEncoder.encode(senha));
+                } else {
+                    cliente.setSenha(senha);
+                }
             }
             cliente.setWhatsapp(clienteAtualizado.getWhatsapp());
             cliente.setCpf(clienteAtualizado.getCpf());

@@ -96,79 +96,107 @@ public class AutenticacaoController {
 
             RedirectAttributes redirectAttributes) {
 
-        TipoUsuario tipoUsuario = TipoUsuario.valueOf(tipoUsuarioStr.toUpperCase());
-        Usuario novoUsuario;
-        boolean isPrestador = (tipoUsuario == TipoUsuario.ROLE_PRESTADOR);
+        try {
+            TipoUsuario tipoUsuario = TipoUsuario.valueOf(tipoUsuarioStr.toUpperCase());
+            Usuario novoUsuario;
+            boolean isPrestador = (tipoUsuario == TipoUsuario.ROLE_PRESTADOR);
 
-        if (isPrestador) {
-            Prestador p = new Prestador();
-            p.setStatusAprovacao(StatusAprovacao.PENDENTE); // Usuário prestador fica pendente para aprovação do admin
-            p.setNomeCompleto(nomeCompleto);
-            p.setEmail(email);
-            p.setWhatsapp(whatsapp);
-            p.setCpf(cpf);
-            p.setSenha(senha);
-            p.setTipoUsuario(tipoUsuario);
+            if (isPrestador) {
+                Prestador p = new Prestador();
+                p.setStatusAprovacao(StatusAprovacao.PENDENTE);
+                p.setNomeCompleto(nomeCompleto);
+                p.setEmail(email);
+                p.setWhatsapp(whatsapp);
+                p.setCpf(cpf);
+                p.setSenha(senha);
+                p.setTipoUsuario(tipoUsuario);
 
-            // Bairros
-            if (bairrosIds != null && !bairrosIds.isEmpty()) {
-                p.setBairros(bairroService.buscarPorIds(bairrosIds));
+                if (bairrosIds != null && !bairrosIds.isEmpty()) {
+                    p.setBairros(bairroService.buscarPorIds(bairrosIds));
+                } else {
+                    p.setBairros(new ArrayList<>());
+                }
+
+                if (servicosIds != null && !servicosIds.isEmpty()) {
+                    p.setServicos(servicoAdicionalService.buscarPorIds(servicosIds));
+                } else {
+                    p.setServicos(new ArrayList<>());
+                }
+
+                prestadorService.salvar(p);
+
+                if (placaVeiculo != null && !placaVeiculo.isBlank()) {
+                    Veiculo v = new Veiculo();
+                    v.setPrestador(p);
+                    v.setPlaca(placaVeiculo);
+                    v.setTipo(TipoVeiculo.valueOf(tipoVeiculoStr));
+                    v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
+                    v.setFechado("ABERTO".equalsIgnoreCase(abertoFechadoStr));
+                    veiculoService.salvar(v);
+                }
+                novoUsuario = p;
+
             } else {
-                p.setBairros(new ArrayList<>());
+                Cliente c = new Cliente();
+                c.setStatusAprovacao(StatusAprovacao.PENDENTE);
+                c.setNomeCompleto(nomeCompleto);
+                c.setEmail(email);
+                c.setWhatsapp(whatsapp);
+                c.setCpf(cpf);
+                c.setSenha(senha);
+                c.setTipoUsuario(tipoUsuario);
+                clienteService.salvar(c);
+
+                novoUsuario = c;
             }
 
-            // Servicos
-            if (servicosIds != null && !servicosIds.isEmpty()) {
-                p.setServicos(servicoAdicionalService.buscarPorIds(servicosIds));
-            } else {
-                p.setServicos(new ArrayList<>());
+            Solicitacao sol = new Solicitacao();
+            sol.setTipoSolicitacao(TipoSolicitacao.CADASTRO);
+            sol.setUsuario(novoUsuario);
+            sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
+
+            String formDetalhes = "Solicita-se cadastro de nova conta. \nTipo de conta: " + tipoUsuario.name();
+            if (isPrestador) {
+                formDetalhes += "\nPlaca: " + placaVeiculo;
+                formDetalhes += "\nTipo de Veículo: " + TipoVeiculo.valueOf(tipoVeiculoStr);
+                formDetalhes += "\nCapacidade: " + capacidade;
+                formDetalhes += "\nCarroceria: " + abertoFechadoStr;
             }
+            sol.setDetalhes(formDetalhes);
+            solicitacaoService.criar(sol);
 
-            prestadorService.salvar(p);
+            redirectAttributes.addFlashAttribute("sucesso", "Cadastro realizado com sucesso! Aguarde a aprovação da nossa equipe antes de tentar fazer login.");
+            return "redirect:/";
+        } catch (Exception e) {
+	        String mensagemErro = getMensagemErro(e);
 
-            // Veiculo se existir informações
-            if (placaVeiculo != null && !placaVeiculo.isBlank()) {
-                Veiculo v = new Veiculo();
-                v.setPrestador(p);
-                v.setPlaca(placaVeiculo);
-                v.setTipo(TipoVeiculo.valueOf(tipoVeiculoStr));
-                v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
-                v.setFechado("ABERTO".equalsIgnoreCase(abertoFechadoStr));
-                veiculoService.salvar(v);
-            }
-            novoUsuario = p;
-
-        } else {
-            Cliente c = new Cliente();
-            c.setStatusAprovacao(StatusAprovacao.PENDENTE); // Usuário cliente fica pendente para aprovação do admin
-            c.setNomeCompleto(nomeCompleto);
-            c.setEmail(email);
-            c.setWhatsapp(whatsapp);
-            c.setCpf(cpf);
-            c.setSenha(senha);
-            c.setTipoUsuario(tipoUsuario);
-            clienteService.salvar(c);
-
-            novoUsuario = c;
+	        redirectAttributes.addFlashAttribute("erro", mensagemErro);
+            redirectAttributes.addFlashAttribute("nomeCompleto", nomeCompleto);
+            redirectAttributes.addFlashAttribute("email", email);
+            redirectAttributes.addFlashAttribute("whatsapp", whatsapp);
+            redirectAttributes.addFlashAttribute("cpf", cpf);
+            redirectAttributes.addFlashAttribute("tipoUsuario", tipoUsuarioStr);
+            redirectAttributes.addFlashAttribute("placaVeiculo", placaVeiculo);
+            redirectAttributes.addFlashAttribute("tipoVeiculo", tipoVeiculoStr);
+            redirectAttributes.addFlashAttribute("capacidadeModel", capacidade);
+            redirectAttributes.addFlashAttribute("abertoFechado", abertoFechadoStr);
+            redirectAttributes.addFlashAttribute("servicosIds", servicosIds);
+            redirectAttributes.addFlashAttribute("bairrosIds", bairrosIds);
+            return "redirect:/cadastro";
         }
-
-        // Criar a solicitação para o admin aprovar
-        Solicitacao sol = new Solicitacao();
-        sol.setTipoSolicitacao(TipoSolicitacao.CADASTRO);
-        sol.setUsuario(novoUsuario);
-        sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
-
-        String formDetalhes = "Solicita-se cadastro de nova conta. \nTipo de conta: " + tipoUsuario.name();
-        if (isPrestador) {
-            formDetalhes += "\nPlaca: " + placaVeiculo;
-	        formDetalhes += "\nTipo de Veículo: " + TipoVeiculo.valueOf(tipoVeiculoStr);
-			formDetalhes += "\nCapacidade: " + capacidade;
-	        formDetalhes += "\nCarroceria: " + abertoFechadoStr;
-        }
-        sol.setDetalhes(formDetalhes);
-        solicitacaoService.criar(sol);
-
-        redirectAttributes.addFlashAttribute("sucesso", "Cadastro realizado com sucesso! Aguarde a aprovação da nossa equipe antes de tentar fazer login.");
-        return "redirect:/"; // Volta pro login
     }
+
+	private static String getMensagemErro(Exception e) {
+		String mensagemErro = "Ocorreu um erro inesperado ao realizar seu cadastro. Por favor, tente novamente.";
+		String originalMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+
+		if (originalMsg.contains("duplicate key value_detail: key (email)") || originalMsg.contains("(email)")) {
+			mensagemErro = "Este endereço de e-mail já está cadastrado em nosso sistema.";
+		} else if (originalMsg.contains("duplicate key value_detail: key (cpf)") || originalMsg.contains("(cpf)")) {
+			mensagemErro = "Este CPF já está cadastrado em nosso sistema.";
+		} else if (originalMsg.contains("duplicate key value_detail: key (placa)")) {
+	        mensagemErro = "Esta placa de veículo já está cadastrada.";
+	    }
+		return mensagemErro;
+	}
 }

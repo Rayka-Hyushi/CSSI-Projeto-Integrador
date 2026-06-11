@@ -47,7 +47,12 @@ public class PrestadorService {
             prestador.setNomeCompleto(prestadorAtualizado.getNomeCompleto());
             prestador.setEmail(prestadorAtualizado.getEmail());
             if (prestadorAtualizado.getSenha() != null && !prestadorAtualizado.getSenha().isEmpty()) {
-                prestador.setSenha(passwordEncoder.encode(prestadorAtualizado.getSenha()));
+                String senha = prestadorAtualizado.getSenha();
+                if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+                    prestador.setSenha(passwordEncoder.encode(senha));
+                } else {
+                    prestador.setSenha(senha);
+                }
             }
             prestador.setWhatsapp(prestadorAtualizado.getWhatsapp());
             prestador.setCpf(prestadorAtualizado.getCpf());
