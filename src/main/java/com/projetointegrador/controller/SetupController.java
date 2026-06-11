@@ -80,7 +80,7 @@ public class SetupController {
 
             usuarioService.salvar(admin);
 
-            redirectAttributes.addFlashAttribute("sucesso", "Administrador criado com sucesso! Você será redirecionado para o login.");
+            redirectAttributes.addFlashAttribute("sucesso", "Administrador criado com sucesso! Agora você pode fazer login.");
             return "redirect:/?admin-criado=true";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", "Erro ao criar administrador: " + e.getMessage());
