@@ -1,7 +1,6 @@
 package com.projetointegrador.controller;
 
 import com.projetointegrador.model.Prestador;
-import com.projetointegrador.repository.PrestadorRepository;
 import com.projetointegrador.service.PrestadorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
