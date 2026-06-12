@@ -1,105 +1,302 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <!-- Reutiliza o fragmento 'head' do seu arquivo modelos/navbar.html -->
+
 <head th:replace="~{fragments/navbar :: head('Painel de Controle')}"></head>
+
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-<!-- Reutiliza sua navbar padrão -->
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+	<!-- Reutiliza sua navbar padrão -->
+	<nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-<main class="flex-grow-1 py-4">
-    <div class="container">
-        <!-- Cabeçalho da Página -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
-            </h2>
-            <span class="text-muted" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
-        </div>
+	<main class="flex-grow-1 py-4">
+		<div class="container">
+			<!-- Cabeçalho da Página -->
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2 class="mb-0">
+					<i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
+				</h2>
+				<span class="text-muted" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
+			</div>
 
-        <!-- Cards de Resumo (Estilo Dashboard) -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-box-seam fs-3 text-primary"></i>
-                        </div>
-                        <div class="ms-3">
-                            <h6 class="card-subtitle mb-1 text-muted">Solicitações</h6>
-                            <h4 class="card-title mb-0 fw-bold">12</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-clock-history fs-3 text-warning"></i>
-                        </div>
-                        <div class="ms-3">
-                            <h6 class="card-subtitle mb-1 text-muted">Em Andamento</h6>
-                            <h4 class="card-title mb-0 fw-bold">5</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-check2-circle fs-3 text-success"></i>
-                        </div>
-                        <div class="ms-3">
-                            <h6 class="card-subtitle mb-1 text-muted">Finalizados</h6>
-                            <h4 class="card-title mb-0 fw-bold">28</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+			<!-- Alerta de Status de Aprovação do Cadastro -->
+			<div th:if="${prestador != null}" class="mb-4 animate__animated animate__fadeIn">
+				<div th:if="${#strings.toString(prestador.statusAprovacao) == 'PENDENTE'}"
+					class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-3">
+					<div class="bg-warning bg-opacity-20 p-2 rounded-circle text-warning-emphasis">
+						<i class="bi bi-clock-history fs-4"></i>
+					</div>
+					<div>
+						<h6 class="alert-heading fw-bold mb-1">Perfil em Análise</h6>
+						<p class="mb-0 small">Seu cadastro está pendente de aprovação pelos administradores. Por
+							enquanto, você ainda não aparecerá nas buscas dos clientes.</p>
+					</div>
+				</div>
+				<div th:if="${#strings.toString(prestador.statusAprovacao) == 'REJEITADO'}"
+					class="alert alert-danger border-0 shadow-sm d-flex align-items-center gap-3">
+					<div class="bg-danger bg-opacity-20 p-2 rounded-circle text-danger">
+						<i class="bi bi-exclamation-triangle-fill fs-4"></i>
+					</div>
+					<div>
+						<h6 class="alert-heading fw-bold mb-1">Perfil Reprovado</h6>
+						<p class="mb-0 small">Seu cadastro foi reprovado por nossa equipe de análise. Entre em contato
+							com o suporte para corrigir as pendências.</p>
+					</div>
+				</div>
+				<div th:if="${#strings.toString(prestador.statusAprovacao) == 'APROVADO'}"
+					class="alert alert-success border-0 shadow-sm d-flex align-items-center gap-3">
+					<div class="bg-success bg-opacity-20 p-2 rounded-circle text-success">
+						<i class="bi bi-check-circle-fill fs-4"></i>
+					</div>
+					<div>
+						<h6 class="alert-heading fw-bold mb-1">Perfil Ativo!</h6>
+						<p class="mb-0 small">Parabéns! Seu cadastro está ativo e seu card de anúncio já está disponível
+							para receber contatos dos clientes.</p>
+					</div>
+				</div>
+			</div>
 
-        <!-- Tabela de Atividades Recentes (Baseada no seu layout de tarefas) -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Atividade Recente</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Descrição do Frete</th>
-                            <th>Data</th>
-                            <th>Status</th>
-                            <th class="text-end">Ações</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <!-- Exemplo de linha estática para teste -->
-                        <tr>
-                            <td class="text-muted small">#101</td>
-                            <td><strong>Entrega Centro - Camobi</strong></td>
-                            <td class="text-muted small">06/05/2026</td>
-                            <td><span class="badge bg-warning text-dark">Pendente</span></td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Detalhes
-                                </button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
+			<!-- Cards de Resumo (Estilo Dashboard) -->
+			<div class="row g-3 mb-4">
+				<!-- Card Recomendações -->
+				<div class="col-sm-6 col-xl-3">
+					<div class="card border-0 shadow-sm h-100">
+						<div class="card-body d-flex align-items-center">
+							<div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 text-primary rounded">
+								<i class="bi bi-hand-thumbs-up-fill fs-3"></i>
+							</div>
+							<div class="ms-3">
+								<h6 class="card-subtitle mb-1 text-muted small">Recomendações</h6>
+								<h4 class="card-title mb-0 fw-bold" th:text="${quantidadeRecomendacoes ?: 0}">0</h4>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Card Veículos -->
+				<div class="col-sm-6 col-xl-3">
+					<div class="card border-0 shadow-sm h-100">
+						<div class="card-body d-flex align-items-center">
+							<div class="flex-shrink-0 bg-success bg-opacity-10 p-3 text-success rounded">
+								<i class="bi bi-truck fs-3"></i>
+							</div>
+							<div class="ms-3">
+								<h6 class="card-subtitle mb-1 text-muted small">Veículos</h6>
+								<h4 class="card-title mb-0 fw-bold" th:text="${quantidadeVeiculos ?: 0}">0</h4>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Card Bairros -->
+				<div class="col-sm-6 col-xl-3">
+					<div class="card border-0 shadow-sm h-100">
+						<div class="card-body d-flex align-items-center">
+							<div class="flex-shrink-0 bg-info bg-opacity-10 p-3 text-info rounded">
+								<i class="bi bi-geo-alt-fill fs-3"></i>
+							</div>
+							<div class="ms-3">
+								<h6 class="card-subtitle mb-1 text-muted small">Bairros Cobertos</h6>
+								<h4 class="card-title mb-0 fw-bold" th:text="${quantidadeBairros ?: 0}">0</h4>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- Card Serviços -->
+				<div class="col-sm-6 col-xl-3">
+					<div class="card border-0 shadow-sm h-100">
+						<div class="card-body d-flex align-items-center">
+							<div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 text-warning rounded">
+								<i class="bi bi-tools fs-3"></i>
+							</div>
+							<div class="ms-3">
+								<h6 class="card-subtitle mb-1 text-muted small">Serviços Extras</h6>
+								<h4 class="card-title mb-0 fw-bold" th:text="${quantidadeServicos ?: 0}">0</h4>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-<!-- Reutiliza seu footer e scripts -->
-<footer th:replace="~{fragments/navbar :: footer}"></footer>
-<div th:replace="~{fragments/navbar :: scripts}"></div>
+			<div class="row">
+				<!-- Demonstração do Card de Perfil -->
+				<div class="col-lg-5 mb-4">
+					<div class="card border-0 shadow-sm h-100">
+						<div class="card-header bg-white py-3 border-0">
+							<h5 class="mb-0 fw-bold text-primary"><i class="bi bi-person-badge me-2"></i>Seu Card de
+								Perfil</h5>
+						</div>
+						<div
+							class="card-body bg-light border-top border-bottom d-flex flex-column align-items-center justify-content-center py-4">
+							<!-- Preview Simulando a visão do Cliente -->
+							<div class="card border-0 shadow-sm cliente-result-card text-start"
+								style="width: 100%; max-width: 320px;">
+								<div class="card-body p-4 d-flex flex-column">
+									<div class="d-flex align-items-center gap-3 mb-3">
+										<div class="position-relative">
+											<img class="rounded-circle cliente-avatar" width="64" height="64"
+												th:src="${prestador?.profilePhotoUrl != null and !#strings.isEmpty(prestador.profilePhotoUrl) ? prestador.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + (prestador != null && prestador.nomeCompleto != null ? prestador.nomeCompleto : 'User') + '&background=random'}"
+												alt="Foto do prestador">
+											<span id="demo-status-dot"
+												style="width: 16px; height: 16px; border: 2px solid white;"
+												th:class="${'position-absolute bottom-0 end-0 p-1 rounded-circle ' + (prestador?.statusOnline ? 'bg-success' : 'bg-secondary')}"
+												title="Status online"></span>
+										</div>
+										<div>
+											<h3 class="h6 fw-bold mb-1"
+												th:text="${prestador?.nomeCompleto ?: 'Seu Nome'}">Nome</h3>
+											<small id="demo-status-text" class="text-muted"
+												th:text="${prestador?.statusOnline ? 'Online' : 'Offline'}">Offline</small>
+										</div>
+									</div>
+
+									<div class="mb-3">
+										<small class="text-muted d-block mb-2">Veículo(s)</small>
+										<div class="d-flex flex-column gap-1">
+											<div th:if="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}"
+												th:each="veiculo : ${prestador.veiculos}">
+												<span class="badge rounded-pill text-bg-light border text-dark"
+													th:text="${veiculo.tipo}">Tipo</span>
+												<small class="text-muted ms-1"
+													th:text="${veiculo.capacidadeCarga + ' kg'}">0 kg</small>
+											</div>
+											<div
+												th:unless="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}">
+												<small class="text-muted">Nenhum veículo cadastrado</small>
+											</div>
+										</div>
+									</div>
+
+									<div class="mb-3">
+										<small class="text-muted d-block mb-2">Bairros atendidos</small>
+										<div class="d-flex flex-wrap gap-2">
+											<span class="badge rounded-pill text-bg-light border text-dark"
+												th:each="bairro : ${prestador?.bairros}"
+												th:text="${bairro.nomeBairro}"></span>
+											<div
+												th:if="${prestador?.bairros == null or #lists.isEmpty(prestador.bairros)}">
+												<small class="text-muted">Nenhum bairro cadastrado</small>
+											</div>
+										</div>
+									</div>
+
+									<div class="mb-3">
+										<small class="text-muted d-block mb-2">Serviços adicionais</small>
+										<div class="d-flex flex-wrap gap-2">
+											<span class="badge rounded-pill text-bg-primary"
+												th:each="servico : ${prestador?.servicos}"
+												th:text="${servico.nomeServico}"></span>
+											<div
+												th:if="${prestador?.servicos == null or #lists.isEmpty(prestador.servicos)}">
+												<small class="text-muted">Nenhum serviço cadastrado</small>
+											</div>
+										</div>
+									</div>
+
+									<div class="mt-auto d-grid gap-2">
+										<button type="button" class="btn btn-success" disabled>
+											<i class="bi bi-whatsapp me-1"></i> Falar no WhatsApp
+										</button>
+										<button type="button" class="btn btn-outline-warning" disabled>
+											<i class="bi bi-hand-thumbs-up me-1"></i>
+											<span class="count" th:text="${prestador?.recomendacoes ?: 0}">0</span>
+											<span class="text">Recomendações</span>
+										</button>
+									</div>
+								</div>
+							</div>
+							<p class="mt-3 text-muted x-small text-center mb-0">Esta é a visualização real do seu
+								anúncio para os clientes.</p>
+						</div>
+						<div class="card-footer bg-white border-0 text-center py-3">
+							<a th:href="@{/perfil}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Editar Foto
+								e Dados</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- Informações Úteis & Configuração -->
+				<div class="col-lg-7 mb-4">
+					<div class="card border-0 shadow-sm mb-4">
+						<div class="card-header bg-white py-3 border-0">
+							<h5 class="mb-0 fw-bold text-dark"><i class="bi bi-gear-fill me-2 text-muted"></i>Sua
+								Configuração de Trabalho</h5>
+						</div>
+						<div class="card-body p-4 border-top border-bottom">
+							<div class="mb-4">
+								<h6 class="fw-bold text-muted small text-uppercase mb-3">Veículos Disponíveis</h6>
+								<div th:if="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}"
+									class="list-group list-group-flush">
+									<div th:each="veiculo : ${prestador.veiculos}"
+										class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+										<div>
+											<i class="bi bi-truck text-primary me-2"></i>
+											<strong th:text="${veiculo.tipo}">Tipo</strong>
+											<span class="text-muted small ms-2"
+												th:text="'| Placa: ' + ${veiculo.placa}">| Placa</span>
+										</div>
+										<span class="badge rounded-pill text-bg-light border"
+											th:text="${veiculo.capacidadeCarga + ' kg'}">0 kg</span>
+									</div>
+								</div>
+								<div th:unless="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}"
+									class="text-center py-3 border border-dashed rounded bg-light bg-opacity-50">
+									<p class="text-muted small mb-2">Nenhum veículo cadastrado no momento.</p>
+									<a th:href="@{/prestador/veiculos}"
+										class="btn btn-sm btn-primary rounded-pill px-3">Cadastrar Veículo</a>
+								</div>
+							</div>
+
+							<div>
+								<h6 class="fw-bold text-muted small text-uppercase mb-3">Serviços Oferecidos</h6>
+								<div th:if="${prestador?.servicos != null and !#lists.isEmpty(prestador.servicos)}"
+									class="d-flex flex-wrap gap-2">
+									<span th:each="servico : ${prestador.servicos}"
+										class="badge rounded-pill text-bg-primary py-2 px-3">
+										<i class="bi bi-check2 me-1"></i> <span th:text="${servico.nomeServico}"></span>
+									</span>
+								</div>
+								<div th:unless="${prestador?.servicos != null and !#lists.isEmpty(prestador.servicos)}"
+									class="text-center py-3 border border-dashed rounded bg-light bg-opacity-50">
+									<p class="text-muted small mb-2">Nenhum serviço adicional configurado.</p>
+									<a th:href="@{/perfil}"
+										class="btn btn-sm btn-outline-secondary rounded-pill px-3">Configurar
+										Serviços</a>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="card border-0 shadow-sm text-white"
+						style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3"><i class="bi bi-lightbulb me-2 text-warning"></i>Dicas para
+								destacar seu perfil</h5>
+							<ul class="list-unstyled mb-0 d-flex flex-column gap-3 small">
+								<li class="d-flex align-items-start gap-2">
+									<i class="bi bi-star-fill text-warning"></i>
+									<span><strong>Complete seu Perfil:</strong> Mantenha seu WhatsApp, foto de perfil e
+										dados sempre atualizados para passar credibilidade.</span>
+								</li>
+								<li class="d-flex align-items-start gap-2">
+									<i class="bi bi-clock-fill text-warning"></i>
+									<span><strong>Fique Online:</strong> Use o interruptor no menu superior para
+										mostrar-se disponível e aparecer com status ativo nas buscas.</span>
+								</li>
+								<li class="d-flex align-items-start gap-2">
+									<i class="bi bi-hand-thumbs-up-fill text-warning"></i>
+									<span><strong>Consiga Recomendações:</strong> Peça para seus clientes satisfeitos
+										clicarem no botão "Recomendar" na tela inicial deles.</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+
+	<!-- Reutiliza seu footer e scripts -->
+	<footer th:replace="~{fragments/navbar :: footer}"></footer>
+	<div th:replace="~{fragments/navbar :: scripts}"></div>
 </body>
+
 </html>

@@ -27,12 +27,17 @@ public class PrestadorService {
         return prestadorRepository.findById(id);
     }
 
+    public Optional<Prestador> buscarPorEmail(String email) {
+        return prestadorRepository.findByEmail(email);
+    }
+
     public List<Prestador> buscarPorStatus(StatusAprovacao status) {
         return prestadorRepository.findByStatusAprovacao(status);
     }
 
     public Prestador salvar(Prestador prestador) {
-        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com $2a$, $2b$ ou $2y$)
+        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com
+        // $2a$, $2b$ ou $2y$)
         if (prestador.getSenha() != null && !prestador.getSenha().isEmpty()) {
             String senha = prestador.getSenha();
             if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {

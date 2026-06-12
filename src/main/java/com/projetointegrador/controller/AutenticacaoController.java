@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.projetointegrador.model.*;
 import com.projetointegrador.service.*;
@@ -16,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controller para gerenciar a autenticao e redirecionamento dos usurios aps o login e telas livres.
+ * Controller para gerenciar a autenticao e redirecionamento dos usurios aps o
+ * login e telas livres.
  */
 @Controller
 public class AutenticacaoController {
@@ -78,6 +80,7 @@ public class AutenticacaoController {
     }
 
     @PostMapping("/cadastro")
+    @Transactional(rollbackFor = Exception.class)
     public String realizarCadastro(
             @RequestParam("nomeCompleto") String nomeCompleto,
             @RequestParam("email") String email,
@@ -100,6 +103,13 @@ public class AutenticacaoController {
             TipoUsuario tipoUsuario = TipoUsuario.valueOf(tipoUsuarioStr.toUpperCase());
             Usuario novoUsuario;
             boolean isPrestador = (tipoUsuario == TipoUsuario.ROLE_PRESTADOR);
+
+            // Validação prévia de placa duplicada ANTES de persistir qualquer entidade
+            if (isPrestador && placaVeiculo != null && !placaVeiculo.isBlank()) {
+                if (veiculoService.existePorPlaca(placaVeiculo)) {
+                    throw new IllegalArgumentException("Placa duplicada");
+                }
+            }
 
             if (isPrestador) {
                 Prestador p = new Prestador();
@@ -165,12 +175,13 @@ public class AutenticacaoController {
             sol.setDetalhes(formDetalhes);
             solicitacaoService.criar(sol);
 
-            redirectAttributes.addFlashAttribute("sucesso", "Cadastro realizado com sucesso! Aguarde a aprovação da nossa equipe antes de tentar fazer login.");
+            redirectAttributes.addFlashAttribute("sucesso",
+                    "Cadastro realizado com sucesso! Aguarde a aprovação da nossa equipe antes de tentar fazer login.");
             return "redirect:/";
         } catch (Exception e) {
-	        String mensagemErro = getMensagemErro(e);
+            String mensagemErro = getMensagemErro(e);
 
-	        redirectAttributes.addFlashAttribute("erro", mensagemErro);
+            redirectAttributes.addFlashAttribute("erro", mensagemErro);
             redirectAttributes.addFlashAttribute("nomeCompleto", nomeCompleto);
             redirectAttributes.addFlashAttribute("email", email);
             redirectAttributes.addFlashAttribute("whatsapp", whatsapp);
@@ -186,17 +197,19 @@ public class AutenticacaoController {
         }
     }
 
-	private static String getMensagemErro(Exception e) {
-		String mensagemErro = "Ocorreu um erro inesperado ao realizar seu cadastro. Por favor, tente novamente.";
-		String originalMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+    private static String getMensagemErro(Exception e) {
+        String mensagemErro = "Ocorreu um erro inesperado ao realizar seu cadastro. Por favor, tente novamente.";
+        String originalMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
 
-		if (originalMsg.contains("duplicate key value_detail: key (email)") || originalMsg.contains("(email)")) {
-			mensagemErro = "Este endereço de e-mail já está cadastrado em nosso sistema.";
-		} else if (originalMsg.contains("duplicate key value_detail: key (cpf)") || originalMsg.contains("(cpf)")) {
-			mensagemErro = "Este CPF já está cadastrado em nosso sistema.";
-		} else if (originalMsg.contains("duplicate key value_detail: key (placa)")) {
-	        mensagemErro = "Esta placa de veículo já está cadastrada.";
-	    }
-		return mensagemErro;
-	}
+        if (originalMsg.contains("duplicate key value_detail: key (email)") || originalMsg.contains("(email)")) {
+            mensagemErro = "Este endereço de e-mail já está cadastrado em nosso sistema.";
+        } else if (originalMsg.contains("duplicate key value_detail: key (cpf)") || originalMsg.contains("(cpf)")) {
+            mensagemErro = "Este CPF já está cadastrado em nosso sistema.";
+        } else if (originalMsg.contains("placa duplicada")) {
+            mensagemErro = "Esta placa já está cadastrada no sistema.";
+        } else if (originalMsg.contains("duplicate key value_detail: key (placa)")) {
+            mensagemErro = "Esta placa de veículo já está cadastrada.";
+        }
+        return mensagemErro;
+    }
 }

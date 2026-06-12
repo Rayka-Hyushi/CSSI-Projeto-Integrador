@@ -34,7 +34,7 @@ public class AutenticacaoService implements UserDetailsService {
 
         return User.withUsername(usuario.getEmail())
                 .password(usuario.getSenha())
-                .disabled(!aprovado)
+                .disabled(usuario instanceof Prestador ? false : !aprovado)
                 .authorities(usuario.getTipoUsuario().name())
                 .build();
     }

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head('Meus Veículos')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navbar -->
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+    <main class="flex-grow-1 py-4">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0"><i class="bi bi-truck me-2 text-primary"></i>Meus Veículos</h2>
+                <a th:href="@{/prestador/inicio}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+            </div>
+
+            <div th:if="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}" class="row g-3">
+                <div th:each="veiculo : ${prestador.veiculos}" class="col-md-6 col-xl-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${veiculo.tipo}"></h5>
+                            <p class="card-text mb-1"><strong>Placa:</strong> <span th:text="${veiculo.placa}"></span></p>
+                            <p class="card-text mb-1"><strong>Capacidade:</strong> <span th:text="${veiculo.capacidadeCarga + ' kg'}"></span></p>
+                            <p class="card-text mb-1"><strong>Carroceria:</strong> <span th:text="${veiculo.fechado ? 'Fechado' : 'Aberto'}"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:unless="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}" class="text-center py-5">
+                <p class="text-muted mb-3">Nenhum veículo cadastrado até o momento.</p>
+                <a th:href="@{/prestador/inicio}" class="btn btn-primary">Voltar ao Dashboard</a>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/navbar :: footer}"></footer>
+    <div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+</html>

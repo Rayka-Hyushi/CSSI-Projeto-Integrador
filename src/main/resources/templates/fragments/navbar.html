@@ -2,18 +2,18 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <!-- ===== HEAD fragment ===== -->
+
 <head th:fragment="head(pageTitle)">
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${pageTitle} + ' – Projeto Integrador'">Projeto Integrador</title>
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <!-- Custom styles -->
-    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 
 <!-- ===== NAVBAR fragment ===== -->
@@ -26,58 +26,46 @@
         <ul class="navbar-nav me-auto">
 
             <!-- ADMIN -->
-            <li class="nav-item"
-                sec:authorize="hasRole('ADMIN')">
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
 
-                <a class="nav-link"
-                   th:href="@{/admin/solicitacoes}">
+                <a class="nav-link" th:href="@{/admin/solicitacoes}">
                     Solicitações
                 </a>
             </li>
 
-            <li class="nav-item"
-                sec:authorize="hasRole('ADMIN')">
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
 
-                <a class="nav-link"
-                   th:href="@{/admin/usuarios}">
+                <a class="nav-link" th:href="@{/admin/usuarios}">
                     Usuários
                 </a>
             </li>
 
             <!-- CLIENTE -->
-            <li class="nav-item"
-                sec:authorize="hasRole('CLIENTE')">
+            <li class="nav-item" sec:authorize="hasRole('CLIENTE')">
 
-                <a class="nav-link"
-                   th:href="@{/cliente/inicio}">
+                <a class="nav-link" th:href="@{/cliente/inicio}">
                     Home
                 </a>
             </li>
 
-            <li class="nav-item"
-                sec:authorize="hasRole('CLIENTE')">
+            <li class="nav-item" sec:authorize="hasRole('CLIENTE')">
 
-                <a class="nav-link"
-                   th:href="@{/cliente/favoritos}">
+                <a class="nav-link" th:href="@{/cliente/favoritos}">
                     Favoritos
                 </a>
             </li>
 
             <!-- PRESTADOR -->
-            <li class="nav-item"
-                sec:authorize="hasRole('PRESTADOR')">
+            <li class="nav-item" sec:authorize="hasRole('PRESTADOR')">
 
-                <a class="nav-link"
-                   th:href="@{/prestador/inicio}">
+                <a class="nav-link" th:href="@{/prestador/inicio}">
                     Home
                 </a>
             </li>
 
-            <li class="nav-item"
-                sec:authorize="hasRole('PRESTADOR')">
+            <li class="nav-item" sec:authorize="hasRole('PRESTADOR')">
 
-                <a class="nav-link"
-                   th:href="@{/prestador/veiculos}">
+                <a class="nav-link" th:href="@{/prestador/veiculos}">
                     Veículos
                 </a>
             </li>
@@ -87,21 +75,13 @@
         <div class="dropdown" sec:authorize="isAuthenticated()">
 
             <button class="dropdown-toggle d-flex align-items-center gap-2 text-white text-decoration-none"
-                    style="background: none; border: none; cursor: pointer;"
-                    type="button"
-                    id="navbarDropdown"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                    data-bs-toggle="dropdown">
+                style="background: none; border: none; cursor: pointer;" type="button" id="navbarDropdown"
+                aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown">
 
                 <img th:src="${usuario != null && usuario.profilePhotoUrl != null && !usuario.profilePhotoUrl.isEmpty() ? usuario.profilePhotoUrl : (usuario != null && usuario.nomeCompleto != null ? 'https://ui-avatars.com/api/?name=' + usuario.nomeCompleto + '&background=random' : 'https://ui-avatars.com/api/?name=User&background=random')}"
-                     th:data-fallback="'https://ui-avatars.com/api/?name=' + (${usuario != null && usuario.nomeCompleto != null ? usuario.nomeCompleto : 'User'}) + '&background=random'"
-                     onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
-                     class="rounded-circle"
-                     width="40"
-                     height="40"
-                     style="object-fit: cover;"
-                     alt="Foto de perfil">
+                    th:data-fallback="'https://ui-avatars.com/api/?name=' + (${usuario != null && usuario.nomeCompleto != null ? usuario.nomeCompleto : 'User'}) + '&background=random'"
+                    onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');" class="rounded-circle"
+                    width="40" height="40" style="object-fit: cover;" alt="Foto de perfil">
 
                 <span sec:authentication="name"></span>
 
@@ -111,8 +91,7 @@
 
                 <!-- PERFIL -->
                 <li>
-                    <a class="dropdown-item"
-                       th:href="@{/perfil}">
+                    <a class="dropdown-item" th:href="@{/perfil}">
                         Meu Perfil
                     </a>
                 </li>
@@ -126,9 +105,8 @@
 
                         <div class="form-check form-switch m-0">
 
-                            <input class="form-check-input"
-                                   type="checkbox"
-                                   id="onlineSwitch">
+                            <input class="form-check-input" type="checkbox" id="onlineSwitch"
+                                th:checked="${usuario != null && usuario.isStatusOnline()}">
 
                         </div>
 
@@ -144,8 +122,7 @@
                 <li>
                     <form th:action="@{/logout}" method="post">
 
-                        <button type="submit"
-                                class="dropdown-item text-danger">
+                        <button type="submit" class="dropdown-item text-danger">
                             Logout
                         </button>
 
@@ -170,8 +147,54 @@
 <!-- ===== SCRIPTS fragment ===== -->
 <div th:fragment="scripts">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const onlineSwitch = document.getElementById('onlineSwitch');
+            if (onlineSwitch) {
+                onlineSwitch.addEventListener('change', function () {
+                    const originalState = !this.checked;
+                    onlineSwitch.disabled = true;
+
+                    fetch('/prestador/status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Erro na requisição');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            onlineSwitch.checked = data.statusOnline;
+                            onlineSwitch.disabled = false;
+
+                            // Atualiza dinamicamente o status no card de preview na tela inicial
+                            const statusDot = document.getElementById('demo-status-dot');
+                            const statusText = document.getElementById('demo-status-text');
+                            if (statusDot && statusText) {
+                                if (data.statusOnline) {
+                                    statusDot.className = 'position-absolute bottom-0 end-0 p-1 rounded-circle bg-success';
+                                    statusText.textContent = 'Online';
+                                } else {
+                                    statusDot.className = 'position-absolute bottom-0 end-0 p-1 rounded-circle bg-secondary';
+                                    statusText.textContent = 'Offline';
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao alternar status:', error);
+                            onlineSwitch.checked = originalState;
+                            onlineSwitch.disabled = false;
+                        });
+                });
+            }
+        });
+    </script>
 </div>
 
 </html>

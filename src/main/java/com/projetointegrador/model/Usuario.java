@@ -128,4 +128,8 @@ public class Usuario {
     public void setProfilePhotoUrl(String profilePhotoUrl) {
         this.profilePhotoUrl = profilePhotoUrl;
     }
+
+    public boolean isStatusOnline() {
+        return false;
+    }
 }

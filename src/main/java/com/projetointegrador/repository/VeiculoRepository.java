@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
     java.util.List<Veiculo> findByPrestadorId(Long prestadorId);
+
+    boolean existsByPlaca(String placa);
 }

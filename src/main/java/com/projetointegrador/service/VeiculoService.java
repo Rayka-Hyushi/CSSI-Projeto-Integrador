@@ -43,4 +43,8 @@ public class VeiculoService {
     public void deletar(Long id) {
         veiculoRepository.deleteById(id);
     }
+
+    public boolean existePorPlaca(String placa) {
+        return veiculoRepository.existsByPlaca(placa);
+    }
 }
