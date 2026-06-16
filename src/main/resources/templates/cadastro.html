@@ -161,7 +161,7 @@
 
                                 <div class="row g-4 mb-4">
                                     <div class="col-md-6">
-                                        <h5 class="section-title">Serviços Oferecidos:</h5>
+                                        <h5 class="section-title">Serviços Adicionais:</h5>
                                         <div class="row row-cols-1 row-cols-md-1 g-2">
                                             <div class="col" th:each="servico : ${servicos}">
                                                 <div class="form-check">
@@ -331,9 +331,7 @@
             if (isPrestador) {
                 prestadorFields.style.display = 'block';
                 requiredInputs.forEach(input => {
-                    if (input.id !== 'placaVeiculo') {
-                        input.required = true;
-                    }
+                    input.required = true;
                 });
             } else {
                 prestadorFields.style.display = 'none';
@@ -422,8 +420,14 @@
 
             // Validar campos específicos do prestador
             if (isPrestador) {
+                const placaVeiculo = document.getElementById('placaVeiculo').value.trim();
                 const tipoVeiculo = document.getElementById('tipoVeiculo').value;
                 const capacidade = document.getElementById('capacidadeModel').value;
+
+                if (!placaVeiculo || placaVeiculo.length < 7) {
+                    adicionarErro('Informe a placa do veículo corretamente!');
+                    return false;
+                }
 
                 if (!tipoVeiculo) {
                     adicionarErro('Selecione um tipo de veículo!');
@@ -439,13 +443,6 @@
                 const bairrosSelecionados = document.querySelectorAll('input[name="bairros"]:checked');
                 if (bairrosSelecionados.length === 0) {
                     adicionarErro('Selecione pelo menos um bairro atendido!');
-                    return false;
-                }
-
-                // Validar se pelo menos um serviço foi selecionado
-                const servicosSelecionados = document.querySelectorAll('input[name="servicos"]:checked');
-                if (servicosSelecionados.length === 0) {
-                    adicionarErro('Selecione pelo menos um serviço oferecido!');
                     return false;
                 }
             }

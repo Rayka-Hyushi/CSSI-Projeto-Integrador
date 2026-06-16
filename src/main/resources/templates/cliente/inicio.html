@@ -157,9 +157,11 @@
                                     <div class="position-relative">
                                         <img class="rounded-circle cliente-avatar" width="64" height="64"
                                              th:src="${prestador.profilePhotoUrl != null and !#strings.isEmpty(prestador.profilePhotoUrl) ? prestador.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + prestador.nomeCompleto + '&background=random'}"
+                                             th:data-fallback="'https://ui-avatars.com/api/?name=' + ${prestador.nomeCompleto} + '&background=random'"
+                                             onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
                                              alt="Foto do prestador">
-                                        <span style="width: 16px; height: 16px; border: 2px solid white;"
-                                              th:class="${'position-absolute bottom-0 end-0 p-1 rounded-circle ' + (prestador.statusOnline ? 'bg-success' : 'bg-secondary')}"
+                                        <span style="width: 15px; height: 15px; border: 2px solid white;"
+                                              th:class="${'position-absolute bottom-0 end-0 rounded-circle ' + (prestador.statusOnline ? 'bg-success' : 'bg-secondary')}"
                                               title="Status online"></span>
                                     </div>
                                     <div>

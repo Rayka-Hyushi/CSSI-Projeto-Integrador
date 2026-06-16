@@ -23,7 +23,7 @@
 			<div th:if="${prestador != null}" class="mb-4 animate__animated animate__fadeIn">
 				<div th:if="${#strings.toString(prestador.statusAprovacao) == 'PENDENTE'}"
 					class="alert alert-warning border-0 shadow-sm d-flex align-items-center gap-3">
-					<div class="bg-warning bg-opacity-20 p-2 rounded-circle text-warning-emphasis">
+					<div class="bg-warning bg-opacity-20 rounded-circle text-warning-emphasis d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
 						<i class="bi bi-clock-history fs-4"></i>
 					</div>
 					<div>
@@ -34,7 +34,7 @@
 				</div>
 				<div th:if="${#strings.toString(prestador.statusAprovacao) == 'REJEITADO'}"
 					class="alert alert-danger border-0 shadow-sm d-flex align-items-center gap-3">
-					<div class="bg-danger bg-opacity-20 p-2 rounded-circle text-danger">
+					<div class="bg-danger bg-opacity-20 rounded-circle text-danger d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
 						<i class="bi bi-exclamation-triangle-fill fs-4"></i>
 					</div>
 					<div>
@@ -45,7 +45,7 @@
 				</div>
 				<div th:if="${#strings.toString(prestador.statusAprovacao) == 'APROVADO'}"
 					class="alert alert-success border-0 shadow-sm d-flex align-items-center gap-3">
-					<div class="bg-success bg-opacity-20 p-2 rounded-circle text-success">
+					<div class="bg-success bg-opacity-20 rounded-circle text-success d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
 						<i class="bi bi-check-circle-fill fs-4"></i>
 					</div>
 					<div>
@@ -134,10 +134,12 @@
 										<div class="position-relative">
 											<img class="rounded-circle cliente-avatar" width="64" height="64"
 												th:src="${prestador?.profilePhotoUrl != null and !#strings.isEmpty(prestador.profilePhotoUrl) ? prestador.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + (prestador != null && prestador.nomeCompleto != null ? prestador.nomeCompleto : 'User') + '&background=random'}"
+												th:data-fallback="'https://ui-avatars.com/api/?name=' + (prestador != null && prestador.nomeCompleto != null ? prestador.nomeCompleto : 'User') + '&background=random'"
+												onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
 												alt="Foto do prestador">
 											<span id="demo-status-dot"
-												style="width: 16px; height: 16px; border: 2px solid white;"
-												th:class="${'position-absolute bottom-0 end-0 p-1 rounded-circle ' + (prestador?.statusOnline ? 'bg-success' : 'bg-secondary')}"
+												style="width: 15px; height: 15px; border: 2px solid white;"
+												th:class="${'position-absolute bottom-0 end-0 rounded-circle ' + (prestador?.statusOnline ? 'bg-success' : 'bg-secondary')}"
 												title="Status online"></span>
 										</div>
 										<div>
@@ -246,7 +248,7 @@
 							</div>
 
 							<div>
-								<h6 class="fw-bold text-muted small text-uppercase mb-3">Serviços Oferecidos</h6>
+								<h6 class="fw-bold text-muted small text-uppercase mb-3">Serviços Adicionais</h6>
 								<div th:if="${prestador?.servicos != null and !#lists.isEmpty(prestador.servicos)}"
 									class="d-flex flex-wrap gap-2">
 									<span th:each="servico : ${prestador.servicos}"

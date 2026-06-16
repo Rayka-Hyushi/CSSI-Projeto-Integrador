@@ -112,6 +112,20 @@ public class AutenticacaoController {
             }
 
             if (isPrestador) {
+                // Validação de campos obrigatórios para Prestador
+                if (placaVeiculo == null || placaVeiculo.isBlank()) {
+                    throw new IllegalArgumentException("A placa do veículo é obrigatória.");
+                }
+                if (tipoVeiculoStr == null || tipoVeiculoStr.isBlank()) {
+                    throw new IllegalArgumentException("O tipo de veículo é obrigatório.");
+                }
+                if (capacidade == null || capacidade <= 0) {
+                    throw new IllegalArgumentException("A capacidade de carga deve ser maior que zero.");
+                }
+                if (bairrosIds == null || bairrosIds.isEmpty()) {
+                    throw new IllegalArgumentException("Selecione pelo menos um bairro atendido.");
+                }
+
                 Prestador p = new Prestador();
                 p.setStatusAprovacao(StatusAprovacao.PENDENTE);
                 p.setNomeCompleto(nomeCompleto);
@@ -121,11 +135,7 @@ public class AutenticacaoController {
                 p.setSenha(senha);
                 p.setTipoUsuario(tipoUsuario);
 
-                if (bairrosIds != null && !bairrosIds.isEmpty()) {
-                    p.setBairros(bairroService.buscarPorIds(bairrosIds));
-                } else {
-                    p.setBairros(new ArrayList<>());
-                }
+                p.setBairros(bairroService.buscarPorIds(bairrosIds));
 
                 if (servicosIds != null && !servicosIds.isEmpty()) {
                     p.setServicos(servicoAdicionalService.buscarPorIds(servicosIds));
@@ -135,15 +145,14 @@ public class AutenticacaoController {
 
                 prestadorService.salvar(p);
 
-                if (placaVeiculo != null && !placaVeiculo.isBlank()) {
-                    Veiculo v = new Veiculo();
-                    v.setPrestador(p);
-                    v.setPlaca(placaVeiculo);
-                    v.setTipo(TipoVeiculo.valueOf(tipoVeiculoStr));
-                    v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
-                    v.setFechado("ABERTO".equalsIgnoreCase(abertoFechadoStr));
-                    veiculoService.salvar(v);
-                }
+                Veiculo v = new Veiculo();
+                v.setPrestador(p);
+                v.setPlaca(placaVeiculo);
+                v.setTipo(TipoVeiculo.valueOf(tipoVeiculoStr));
+                v.setCapacidadeCarga(capacidade);
+                v.setFechado("FECHADO".equalsIgnoreCase(abertoFechadoStr));
+                veiculoService.salvar(v);
+                
                 novoUsuario = p;
 
             } else {
