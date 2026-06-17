@@ -8,9 +8,24 @@
 
     <main class="flex-grow-1 py-4">
         <div class="container">
+            <!-- Mensagens de Feedback -->
+            <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-check-circle me-1"></i> <span th:text="${sucesso}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                <i class="bi bi-exclamation-circle me-1"></i> <span th:text="${erro}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="mb-0"><i class="bi bi-truck me-2 text-primary"></i>Meus Veículos</h2>
-                <a th:href="@{/prestador/inicio}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoVeiculoModal">
+                        <i class="bi bi-plus-lg"></i> Solicitar Novo Veículo
+                    </button>
+                    <a th:href="@{/prestador/inicio}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+                </div>
             </div>
 
             <div th:if="${prestador?.veiculos != null and !#lists.isEmpty(prestador.veiculos)}" class="row g-3">
@@ -31,9 +46,76 @@
                 <a th:href="@{/prestador/inicio}" class="btn btn-primary">Voltar ao Dashboard</a>
             </div>
         </div>
+
+        <!-- Modal Solicitar Novo Veículo -->
+        <div class="modal fade" id="novoVeiculoModal" tabindex="-1" aria-labelledby="novoVeiculoModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:action="@{/prestador/veiculos/solicitar}" method="post">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="novoVeiculoModalLabel">Solicitar Cadastro de Veículo</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted small mb-4">Preencha os dados do novo veículo. Sua solicitação será analisada pela nossa equipe administrativa.</p>
+                            
+                            <div class="mb-3">
+                                <label for="tipo" class="form-label">Tipo de Veículo:</label>
+                                <select class="form-select" id="tipo" name="tipo" required>
+                                    <option th:each="tipo : ${T(com.projetointegrador.model.TipoVeiculo).values()}"
+                                            th:value="${tipo}" th:text="${tipo}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="placa" class="form-label">Placa do Veículo:</label>
+                                <input type="text" class="form-control" id="placa" name="placa" placeholder="BRA0X23" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="capacidade" class="form-label">Capacidade de Carga (KG):</label>
+                                <input type="number" class="form-control" id="capacidade" name="capacidade" placeholder="3000" min="1" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label d-block">Carroceria:</label>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="abertoFechado" id="statusAberto" value="ABERTO" checked>
+                                    <label class="form-check-label" for="statusAberto">Aberto</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="abertoFechado" id="statusFechado" value="FECHADO">
+                                    <label class="form-check-label" for="statusFechado">Fechado</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Enviar Solicitação</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer th:replace="~{fragments/navbar :: footer}"></footer>
     <div th:replace="~{fragments/navbar :: scripts}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/imask@7.0.0/lib/imask.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const placaInput = document.getElementById('placa');
+            if (placaInput && window.IMask) {
+                IMask(placaInput, {
+                    mask: 'AAA0A00',
+                    definitions: {
+                        'A': /[A-Za-z]/,
+                        '0': /[0-9]/
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
