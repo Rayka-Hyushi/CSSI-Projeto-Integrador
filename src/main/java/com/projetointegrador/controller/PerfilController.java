@@ -1,14 +1,18 @@
 package com.projetointegrador.controller;
 
 import com.projetointegrador.model.Usuario;
+import com.projetointegrador.model.Prestador;
 import com.projetointegrador.model.Solicitacao;
 import com.projetointegrador.model.StatusAprovacao;
 import com.projetointegrador.model.TipoSolicitacao;
 import com.projetointegrador.service.UsuarioService;
+import com.projetointegrador.service.PrestadorService;
+import com.projetointegrador.service.ServicoAdicionalService;
 import com.projetointegrador.service.SolicitacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,8 +23,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 public class PerfilController {
@@ -29,13 +36,52 @@ public class PerfilController {
     private UsuarioService usuarioService;
 
     @Autowired
+    private PrestadorService prestadorService;
+
+    @Autowired
+    private ServicoAdicionalService servicoAdicionalService;
+
+    @Autowired
     private SolicitacaoService solicitacaoService;
 
     private static final String UPLOAD_DIR = "uploads/";
 
     @GetMapping("/perfil")
-    public String abrirPerfil() {
+    public String abrirPerfil(Model model, Authentication authentication) {
+        model.addAttribute("servicosDisponiveis", servicoAdicionalService.listarTodos());
+        
+        Optional<Prestador> prestadorOpt = prestadorService.buscarPorEmail(authentication.getName());
+        if (prestadorOpt.isPresent()) {
+            List<Long> servicosIds = prestadorOpt.get().getServicos().stream()
+                    .map(s -> s.getId())
+                    .collect(Collectors.toList());
+            model.addAttribute("servicosIds", servicosIds);
+        }
+        
         return "perfil/profile";
+    }
+
+    @PostMapping("/perfil/servicos")
+    public String atualizarServicos(@RequestParam(value = "servicos", required = false) List<Long> servicosIds,
+                                   Authentication authentication,
+                                   RedirectAttributes redirectAttributes) {
+        
+        Optional<Prestador> prestadorOpt = prestadorService.buscarPorEmail(authentication.getName());
+        
+        if (prestadorOpt.isPresent()) {
+            Prestador p = prestadorOpt.get();
+            if (servicosIds != null && !servicosIds.isEmpty()) {
+                p.setServicos(servicoAdicionalService.buscarPorIds(servicosIds));
+            } else {
+                p.setServicos(new ArrayList<>());
+            }
+            prestadorService.salvar(p);
+            redirectAttributes.addFlashAttribute("sucesso", "Serviços adicionais atualizados com sucesso!");
+        } else {
+            redirectAttributes.addFlashAttribute("erro", "Apenas prestadores podem editar serviços oferecidos.");
+        }
+        
+        return "redirect:/perfil";
     }
 
     @PostMapping("/perfil/foto")

@@ -128,6 +128,30 @@
                                 <i class="bi bi-headset me-2"></i> Solicitar Alteração de Dados
                             </button>
                         </div>
+
+                        <!-- Seção específica para Prestadores: Alterar Serviços -->
+                        <div sec:authorize="hasRole('ROLE_PRESTADOR')" class="mt-5">
+                            <hr class="my-4">
+                            <h5 class="fw-bold mb-3"><i class="bi bi-tools me-2"></i>Meus Serviços Adicionais</h5>
+                            <p class="text-muted small">Selecione abaixo os serviços adicionais que você oferece aos seus clientes.</p>
+                            
+                            <form th:action="@{/perfil/servicos}" method="post" class="card bg-light border-0">
+                                <div class="card-body">
+                                    <div class="row row-cols-1 g-2">
+                                        <div class="col" th:each="servico : ${servicosDisponiveis}">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="servicos"
+                                                       th:value="${servico.id}" th:id="'servico-' + ${servico.id}"
+                                                       th:checked="${servicosIds != null && servicosIds.contains(servico.id)}">
+                                                <label class="form-check-label" th:for="'servico-' + ${servico.id}"
+                                                       th:text="${servico.nomeServico}"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 mt-3">Salvar Serviços</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                 </div>
