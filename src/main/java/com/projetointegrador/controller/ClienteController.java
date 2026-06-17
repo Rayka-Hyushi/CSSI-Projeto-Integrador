@@ -201,9 +201,9 @@ public class ClienteController {
 
     private List<TipoVeiculo> getTiposVeiculosPorTamanhoFrete(String tamanhoFrete) {
         return switch (tamanhoFrete) {
-            case "PEQUENO" -> Arrays.asList(TipoVeiculo.FIORINO, TipoVeiculo.VAN);
-            case "MEDIO" -> Arrays.asList(TipoVeiculo.CAMINHONETE, TipoVeiculo.VUC);
-            case "GRANDE" -> Arrays.asList(TipoVeiculo.BAU_ABERTO, TipoVeiculo.BAU_FECHADO);
+            case "PEQUENO" -> Arrays.asList(TipoVeiculo.FIORINO, TipoVeiculo.VAN, TipoVeiculo.CAMINHONETE);
+            case "MEDIO" -> Arrays.asList(TipoVeiculo.VUC);
+            case "GRANDE" -> Arrays.asList(TipoVeiculo.CAMINHAO_BAU);
             default -> new ArrayList<>();
         };
     }

@@ -181,7 +181,7 @@
                                         <div th:if="${prestador.veiculos != null and !#lists.isEmpty(prestador.veiculos)}"
                                              th:each="veiculo : ${prestador.veiculos}">
                                             <span class="badge rounded-pill text-bg-light border text-dark"
-                                                  th:text="${veiculo.tipo}">Tipo</span>
+                                                  th:text="${veiculo.tipo.descricao}">Tipo</span>
                                             <small class="text-muted ms-1" th:text="${veiculo.capacidadeCarga + ' kg'}">0 kg</small>
                                         </div>
                                         <div th:unless="${prestador.veiculos != null and !#lists.isEmpty(prestador.veiculos)}">

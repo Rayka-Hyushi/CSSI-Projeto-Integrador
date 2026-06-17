@@ -32,7 +32,7 @@
                 <div th:each="veiculo : ${prestador.veiculos}" class="col-md-6 col-xl-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
-                            <h5 class="card-title" th:text="${veiculo.tipo}"></h5>
+                            <h5 class="card-title text-primary" th:text="${veiculo.tipo.descricao}"></h5>
                             <p class="card-text mb-1"><strong>Placa:</strong> <span th:text="${veiculo.placa}"></span></p>
                             <p class="card-text mb-1"><strong>Capacidade:</strong> <span th:text="${veiculo.capacidadeCarga + ' kg'}"></span></p>
                             <p class="card-text mb-1"><strong>Carroceria:</strong> <span th:text="${veiculo.fechado ? 'Fechado' : 'Aberto'}"></span></p>
@@ -63,7 +63,7 @@
                                 <label for="tipo" class="form-label">Tipo de Veículo:</label>
                                 <select class="form-select" id="tipo" name="tipo" required>
                                     <option th:each="tipo : ${T(com.projetointegrador.model.TipoVeiculo).values()}"
-                                            th:value="${tipo}" th:text="${tipo}"></option>
+                                            th:value="${tipo}" th:text="${tipo.descricao}"></option>
                                 </select>
                             </div>
 

@@ -8,8 +8,7 @@ public enum TipoVeiculo {
     VAN("Van"),
     CAMINHONETE("Caminhonete"),
     VUC("Caminhão Urbano de Carga"),
-    BAU_ABERTO("Caminhão Baú - Aberto"),
-    BAU_FECHADO("Caminhão Baú - Fechado");
+    CAMINHAO_BAU("Caminhão Baú");
 
     private final String descricao;
 
