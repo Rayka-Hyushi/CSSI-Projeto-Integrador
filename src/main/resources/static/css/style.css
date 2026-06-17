@@ -79,17 +79,19 @@ body {
 }
 
 .cliente-select {
-    background-color: #5f5f5f;
-    color: #fff;
-    border-color: #5f5f5f;
+    background-color: #fff;
+    color: #212529;
+    border: 2px solid #e9ecef;
+    border-radius: 0.75rem;
     box-shadow: none;
+    transition: all 0.2s ease;
 }
 
 .cliente-select:focus {
-    background-color: #5f5f5f;
-    color: #fff;
+    background-color: #fff;
+    color: #212529;
     border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
 }
 
 .cliente-select option {
@@ -97,23 +99,61 @@ body {
     background: #fff;
 }
 
-.cliente-check-card {
+/* Updated Service Chips */
+.cliente-services-grid {
     display: flex;
-    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 0.75rem;
-    padding: 0.75rem 0.9rem;
-    border: 1px solid #dee2e6;
-    border-radius: 0.85rem;
-    background: #fff;
+    margin-top: 1rem;
 }
 
-.cliente-check-card:hover {
-    border-color: rgba(13, 110, 253, 0.35);
-    background: rgba(13, 110, 253, 0.03);
+.cliente-service-option {
+    position: relative;
+}
+
+.cliente-service-option input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.cliente-service-label {
+    display: flex;
+    align-items: center;
+    padding: 0.65rem 1.25rem;
+    background-color: #fff;
+    border: 2px solid #e9ecef;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    user-select: none;
+}
+
+.cliente-service-option input:checked + .cliente-service-label {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+.cliente-service-label:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.cliente-service-option input:checked + .cliente-service-label:hover {
+    background-color: #0b5ed7;
+    color: #fff;
 }
 
 .cliente-search-btn {
-    min-width: 240px;
+    min-width: 200px;
+    border-radius: 0.75rem;
+    font-weight: 600;
 }
 
 .cliente-subtitle-wrap {

@@ -68,12 +68,80 @@ public class ClienteController {
         model.addAttribute("tamanhoFreteSelecionado", tamanhoFrete);
         model.addAttribute("servicosSelecionados", servicosIds != null ? servicosIds : new ArrayList<>());
 
-        // Adiciona o usuário logado ao modelo
+        // Adiciona o usuário logado ao modelo e lista de favoritos
         if (authentication != null && authentication.isAuthenticated()) {
-            model.addAttribute("usuarioLogadoId", authentication.getName());
+            String email = authentication.getName();
+            Optional<Cliente> clienteOpt = clienteService.buscarPorEmail(email);
+            if (clienteOpt.isPresent()) {
+                Cliente cliente = clienteOpt.get();
+                List<Long> favoritosIds = cliente.getPrestadores().stream()
+                        .map(Prestador::getId)
+                        .toList();
+                model.addAttribute("favoritosIds", favoritosIds);
+            }
+            model.addAttribute("usuarioLogadoId", email);
         }
 
         return "cliente/inicio";
+    }
+
+    @GetMapping("/favoritos")
+    @Transactional(readOnly = true)
+    public String listarFavoritos(Authentication authentication, Model model) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            String email = authentication.getName();
+            Optional<Cliente> clienteOpt = clienteService.buscarPorEmail(email);
+            if (clienteOpt.isPresent()) {
+                Cliente cliente = clienteOpt.get();
+                // Inicializa a coleção lazy
+                if (cliente.getPrestadores() != null) {
+                    cliente.getPrestadores().size();
+                }
+                model.addAttribute("favoritos", cliente.getPrestadores());
+            }
+        }
+        return "cliente/favoritos";
+    }
+
+    @PostMapping("/favoritar/{prestadorId}")
+    @Transactional
+    @ResponseBody
+    public ResponseEntity<?> alternarFavorito(
+            @PathVariable Long prestadorId,
+            Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("sucesso", false, "mensagem", "Usuário não autenticado"));
+        }
+
+        try {
+            String email = authentication.getName();
+            Optional<Cliente> clienteOpt = clienteService.buscarPorEmail(email);
+            Optional<Prestador> prestadorOpt = prestadorService.buscarPorId(prestadorId);
+
+            if (clienteOpt.isEmpty() || prestadorOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("sucesso", false, "mensagem", "Cliente ou Prestador não encontrado"));
+            }
+
+            Cliente cliente = clienteOpt.get();
+            Prestador prestador = prestadorOpt.get();
+            List<Prestador> favoritos = cliente.getPrestadores();
+            
+            boolean isFavorito;
+            if (favoritos.contains(prestador)) {
+                favoritos.remove(prestador);
+                isFavorito = false;
+            } else {
+                favoritos.add(prestador);
+                isFavorito = true;
+            }
+            
+            clienteService.salvar(cliente);
+            return ResponseEntity.ok(Map.of("sucesso", true, "isFavorito", isFavorito, "mensagem", isFavorito ? "Adicionado aos favoritos" : "Removido dos favoritos"));
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("sucesso", false, "mensagem", "Erro ao processar favorito: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/recomendar/{prestadorId}")

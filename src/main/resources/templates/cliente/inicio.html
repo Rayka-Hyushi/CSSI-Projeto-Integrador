@@ -34,7 +34,9 @@
                         <form th:action="@{/cliente/inicio}" method="get" class="cliente-frete-form">
                             <div class="row g-4">
                                 <div class="col-md-6">
-                                    <label for="origem" class="form-label fw-semibold">Bairro de origem</label>
+                                    <label for="origem" class="form-label fw-semibold text-dark">
+                                        <i class="bi bi-geo-alt-fill text-primary me-1"></i> Bairro de origem
+                                    </label>
                                     <select id="origem" name="origem" class="form-select form-select-lg cliente-select">
                                         <option value="" th:selected="${origemSelecionada == null}">Todos os bairros
                                         </option>
@@ -45,7 +47,9 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="destino" class="form-label fw-semibold">Bairro de destino</label>
+                                    <label for="destino" class="form-label fw-semibold text-dark">
+                                        <i class="bi bi-geo-fill text-primary me-1"></i> Bairro de destino
+                                    </label>
                                     <select id="destino" name="destino"
                                             class="form-select form-select-lg cliente-select">
                                         <option value="" th:selected="${destinoSelecionado == null}">Qualquer bairro
@@ -57,8 +61,9 @@
                                 </div>
 
                                 <div class="col-12">
-                                    <label for="tamanhoFrete" class="form-label fw-semibold">Porte do
-                                        atendimento</label>
+                                    <label for="tamanhoFrete" class="form-label fw-semibold text-dark">
+                                        <i class="bi bi-truck text-primary me-1"></i> Porte do atendimento
+                                    </label>
                                     <select id="tamanhoFrete" name="tamanhoFrete"
                                             class="form-select form-select-lg cliente-select">
                                         <option value=""
@@ -84,16 +89,16 @@
                                             prestador.</p>
                                     </div>
 
-                                    <div class="row g-3 mt-1">
-                                        <div class="col-md-6 col-xl-6" th:each="servico : ${servicos}">
-                                            <div class="form-check cliente-check-card">
-                                                <input class="form-check-input" type="checkbox" name="servicos"
-                                                       th:value="${servico.id}" th:id="'servico-' + ${servico.id}"
-                                                       th:checked="${servicosSelecionados.contains(servico.id)}">
-                                                <label class="form-check-label fw-semibold"
-                                                       th:for="'servico-' + ${servico.id}"
-                                                       th:text="${servico.nomeServico}"></label>
-                                            </div>
+                                    <div class="cliente-services-grid">
+                                        <div class="cliente-service-option" th:each="servico : ${servicos}">
+                                            <input type="checkbox" name="servicos"
+                                                   th:value="${servico.id}" th:id="'servico-' + ${servico.id}"
+                                                   th:checked="${servicosSelecionados.contains(servico.id)}">
+                                            <label class="cliente-service-label"
+                                                   th:for="'servico-' + ${servico.id}">
+                                                <i class="bi bi-tag me-2"></i>
+                                                <span th:text="${servico.nomeServico}"></span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -204,10 +209,19 @@
                                 </div>
 
                                 <div class="mt-auto d-grid gap-2">
-                                    <button type="button" class="btn btn-success"
-                                            th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
-                                        <i class="bi bi-whatsapp me-1"></i> Falar no WhatsApp
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button type="button" class="btn btn-success flex-grow-1"
+                                                th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
+                                            <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                                        </button>
+                                        <button type="button" 
+                                                th:class="${'btn ' + (favoritosIds != null && favoritosIds.contains(prestador.id) ? 'btn-danger' : 'btn-outline-danger')}"
+                                                th:attr="data-prestador-id=${prestador.id}"
+                                                onclick="alternarFavorito(this)"
+                                                title="Favoritar">
+                                            <i th:class="${'bi ' + (favoritosIds != null && favoritosIds.contains(prestador.id) ? 'bi-heart-fill' : 'bi-heart')}"></i>
+                                        </button>
+                                    </div>
                                     <button type="button" class="btn btn-outline-warning"
                                             th:attr="data-prestador-id=${prestador.id}"
                                             onclick="recomendarPrestador(this)">
@@ -243,6 +257,45 @@
         }
 
         window.open('https://wa.me/' + numero, '_blank', 'noopener');
+    }
+
+    function alternarFavorito(botao) {
+        const prestadorId = botao.getAttribute('data-prestador-id');
+        const icon = botao.querySelector('i');
+
+        botao.disabled = true;
+
+        fetch(`/cliente/favoritar/${prestadorId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            botao.disabled = false;
+            if (data.sucesso) {
+                if (data.isFavorito) {
+                    botao.classList.remove('btn-outline-danger');
+                    botao.classList.add('btn-danger');
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                } else {
+                    botao.classList.remove('btn-danger');
+                    botao.classList.add('btn-outline-danger');
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                }
+                showNotification(data.mensagem, 'success');
+            } else {
+                showNotification(data.mensagem, 'warning');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            botao.disabled = false;
+            showNotification('Erro ao processar favorito', 'danger');
+        });
     }
 
     function recomendarPrestador(botao) {
