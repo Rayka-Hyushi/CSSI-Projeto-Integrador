@@ -112,8 +112,9 @@
                     <h5 class="modal-title">Editar Dados do Usuário</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/admin/usuarios/editar}" method="post">
+                <form th:action="@{/admin/usuarios/editar}" method="post" th:id="'formEditar' + ${user.id}">
                     <div class="modal-body">
+                        <div th:id="'erroValidacao' + ${user.id}" class="alert alert-danger d-none" role="alert"></div>
                         <div class="row g-3">
                             <!-- Foto do Perfil (se existir) -->
                             <div class="col-12 text-center mb-3" th:if="${user.profilePhotoUrl}">
@@ -453,6 +454,41 @@
                 attachFormatting();
             });
         })();
+    </script>
+
+    <script>
+        document.querySelectorAll('[id^="formEditar"]').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var formEl = e.target;
+                var userId = formEl.id.replace('formEditar', '');
+                var erroDiv = document.getElementById('erroValidacao' + userId);
+                var email = formEl.querySelector('input[name="email"]').value.trim();
+                var cpf = formEl.querySelector('input[name="cpf"]').value.trim();
+                var id = formEl.querySelector('input[name="id"]').value;
+
+                erroDiv.classList.add('d-none');
+                erroDiv.innerHTML = '';
+
+                fetch('/admin/usuarios/verificar?email=' + encodeURIComponent(email) + '&cpf=' + encodeURIComponent(cpf) + '&id=' + id)
+                    .then(function(r) { return r.json(); })
+                    .then(function(dados) {
+                        var erros = [];
+                        if (dados.emailExiste) erros.push('Este e-mail já está em uso por outro usuário.');
+                        if (dados.cpfExiste) erros.push('Este CPF já está em uso por outro usuário.');
+                        if (erros.length > 0) {
+                            erroDiv.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>' + erros.join('<br>') + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                            erroDiv.classList.remove('d-none');
+                            erroDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        } else {
+                            formEl.submit();
+                        }
+                    })
+                    .catch(function() {
+                        formEl.submit();
+                    });
+            });
+        });
     </script>
 </body>
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.projetointegrador.model.Solicitacao;
@@ -79,6 +80,35 @@ public class AdminController {
         model.addAttribute("veiculosMap", veiculosMap);
         model.addAttribute("totalUsuarios", usuarios.size());
         return "admin/usuarios";
+    }
+
+    @GetMapping("/usuarios/verificar")
+    @ResponseBody
+    public java.util.Map<String, Boolean> verificarCpfEmail(
+            @RequestParam("email") String email,
+            @RequestParam("cpf") String cpf,
+            @RequestParam(value = "id", required = false) Long id) {
+
+        String cpfDigitos = cpf.replaceAll("\\D+", "");
+        String emailNormalizado = email.trim().toLowerCase();
+
+        boolean emailExiste = false;
+        boolean cpfExiste = false;
+
+        for (Usuario u : usuarioService.listarTodos()) {
+            if (id != null && u.getId().equals(id)) continue;
+            if (u.getEmail() != null && u.getEmail().trim().equalsIgnoreCase(emailNormalizado)) {
+                emailExiste = true;
+            }
+            if (u.getCpf() != null && u.getCpf().replaceAll("\\D+", "").equals(cpfDigitos)) {
+                cpfExiste = true;
+            }
+        }
+
+        java.util.Map<String, Boolean> resultado = new java.util.HashMap<>();
+        resultado.put("emailExiste", emailExiste);
+        resultado.put("cpfExiste", cpfExiste);
+        return resultado;
     }
 
     @PostMapping("/usuarios/remover")
