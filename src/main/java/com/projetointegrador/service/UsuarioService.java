@@ -3,10 +3,12 @@ package com.projetointegrador.service;
 import com.projetointegrador.exceptions.SizeExceededException;
 import com.projetointegrador.model.TipoUsuario;
 import com.projetointegrador.model.Usuario;
+import com.projetointegrador.repository.SolicitacaoRepository;
 import com.projetointegrador.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,6 +29,9 @@ public class UsuarioService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
+	@Autowired
+	private SolicitacaoRepository solicitacaoRepository;
+
 	public List<Usuario> listarTodos() {
 		return usuarioRepository.findAll();
 	}
@@ -44,16 +49,32 @@ public class UsuarioService {
 	}
 
 	public Usuario salvar(Usuario usuario) {
+		// Normaliza CPF para comparação e armazenamento
+		String cpfFormatado = formatarCpf(usuario.getCpf());
+		usuario.setCpf(cpfFormatado);
+
+		// Normaliza WhatsApp para armazenamento
+		String whatsappFormatado = formatarWhatsapp(usuario.getWhatsapp());
+		usuario.setWhatsapp(whatsappFormatado);
+
 		// 1. Validar se o e-mail já está em uso por outro usuário
 		Optional<Usuario> usuarioPorEmail = buscarPorEmail(usuario.getEmail());
 		if (usuarioPorEmail.isPresent() && !usuarioPorEmail.get().getId().equals(usuario.getId())) {
 			throw new RuntimeException("Email já em uso por outro usuário");
 		}
 
-		// 2. Validar se o CPF já está em uso por outro usuário
+		// 2. Validar se o CPF já está em uso por outro usuário (normalizado)
+		String cpfDigitos = cpfDigitos(usuario.getCpf());
 		Optional<Usuario> usuarioPorCpf = buscarPorCpf(usuario.getCpf());
 		if (usuarioPorCpf.isPresent() && !usuarioPorCpf.get().getId().equals(usuario.getId())) {
 			throw new RuntimeException("CPF já em uso por outro usuário");
+		}
+		// Também verifica por CPF sem formatação (dados antigos no banco)
+		List<Usuario> todos = usuarioRepository.findAll();
+		for (Usuario u : todos) {
+			if (!u.getId().equals(usuario.getId()) && cpfDigitos.equals(cpfDigitos(u.getCpf()))) {
+				throw new RuntimeException("CPF já em uso por outro usuário");
+			}
 		}
 
 		// 3. Validar foto de perfil
@@ -103,19 +124,24 @@ public class UsuarioService {
 		return usuarioRepository.save(usuario);
 	}
 
+	@Transactional
 	public void deletar(Long id) {
-		if (usuarioRepository.findById(id).get().getTipoUsuario().equals(TipoUsuario.ROLE_ADMIN)) {
+		Usuario usuario = usuarioRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+		if (usuario.getTipoUsuario().equals(TipoUsuario.ROLE_ADMIN)) {
 			throw new RuntimeException("Administradores não podem ser deletados.");
-		} else if (!usuarioRepository.existsById(id)) {
-			throw new RuntimeException("Usuário não encontrado.");
-		} else {
-			if (buscarPorId(id).get().getTipoUsuario().equals(TipoUsuario.ROLE_CLIENTE)) {
-				clienteService.deletar(id);
-			} else {
-				prestadorService.deletar(id);
-			}
-			usuarioRepository.deleteById(id);
 		}
+
+		// Remove todas as solicitações vinculadas ao usuário (FK constraint)
+		solicitacaoRepository.deleteByUsuarioId(id);
+
+		if (usuario.getTipoUsuario().equals(TipoUsuario.ROLE_CLIENTE)) {
+			clienteService.deletar(id);
+		} else {
+			prestadorService.deletar(id);
+		}
+		usuarioRepository.deleteById(id);
 	}
 
 	public boolean existePorCpf(String cpf) {
@@ -132,5 +158,31 @@ public class UsuarioService {
 
 	public long contar() {
 		return usuarioRepository.count();
+	}
+
+	private static String cpfDigitos(String cpf) {
+		if (cpf == null) return "";
+		return cpf.replaceAll("\\D+", "");
+	}
+
+	private static String formatarCpf(String cpf) {
+		String digitos = cpfDigitos(cpf);
+		if (digitos.length() != 11) return digitos;
+		return digitos.substring(0, 3) + "." + digitos.substring(3, 6) + "." + digitos.substring(6, 9) + "-" + digitos.substring(9);
+	}
+
+	private static String formatarWhatsapp(String whatsapp) {
+		if (whatsapp == null) return "";
+		String digitos = whatsapp.replaceAll("\\D+", "");
+		if (digitos.length() > 11 && digitos.startsWith("55")) {
+			digitos = digitos.substring(2);
+		}
+		digitos = digitos.substring(0, Math.min(digitos.length(), 11));
+		if (digitos.length() == 11) {
+			return "(" + digitos.substring(0, 2) + ") " + digitos.substring(2, 7) + "-" + digitos.substring(7);
+		} else if (digitos.length() == 10) {
+			return "(" + digitos.substring(0, 2) + ") " + digitos.substring(2, 6) + "-" + digitos.substring(6);
+		}
+		return digitos;
 	}
 }

@@ -1,5 +1,6 @@
 package com.projetointegrador.controller;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -111,18 +112,31 @@ public class AdminController {
                 v = new Veiculo();
             }
 
-            v.setPlaca(placa);
+            // Verifica placa duplicada: novo veículo OU placa alterada na edição
+            String placaNormalizada = placa != null ? placa.trim().toUpperCase() : "";
+            boolean placaAlterada = (id == null) || !placaNormalizada.equals(v.getPlaca() != null ? v.getPlaca().toUpperCase() : "");
+            if (placaAlterada && veiculoService.existePorPlaca(placaNormalizada)) {
+                redirectAttributes.addFlashAttribute("erro", "Já existe um veículo cadastrado com a placa '" + placaNormalizada + "'.");
+                return "redirect:/admin/usuarios";
+            }
+
+            v.setPlaca(placaNormalizada);
             try {
                 v.setTipo(com.projetointegrador.model.TipoVeiculo.valueOf(tipoStr));
             } catch (IllegalArgumentException e) {
-                // ignore invalid tipo
+                redirectAttributes.addFlashAttribute("erro", "Tipo de veículo inválido.");
+                return "redirect:/admin/usuarios";
             }
             v.setCapacidadeCarga(capacidade != null ? capacidade : 0.0);
             v.setFechado("on".equalsIgnoreCase(fechado));
             v.setPrestador(prestador);
 
-            veiculoService.salvar(v);
-            redirectAttributes.addFlashAttribute("sucesso", "Veículo salvo com sucesso.");
+            try {
+                veiculoService.salvar(v);
+                redirectAttributes.addFlashAttribute("sucesso", "Veículo salvo com sucesso.");
+            } catch (DataIntegrityViolationException e) {
+                redirectAttributes.addFlashAttribute("erro", "Já existe um veículo cadastrado com essa placa.");
+            }
         } else {
             redirectAttributes.addFlashAttribute("erro", "Prestador não encontrado.");
         }
@@ -214,15 +228,23 @@ public class AdminController {
             @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao,
             RedirectAttributes redirectAttributes) {
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
-        if (usuarioOpt.isPresent()) {
+        if (!usuarioOpt.isPresent()) {
+            redirectAttributes.addFlashAttribute("erro", "Usuário não encontrado.");
+            return "redirect:/admin/usuarios";
+        }
+
+        try {
             Usuario usuario = usuarioOpt.get();
             usuario.setNomeCompleto(nomeCompleto);
             usuario.setEmail(email);
             usuario.setWhatsapp(whatsapp);
             usuario.setCpf(cpf);
 
-            // Se o usuário for Cliente ou Prestador e o status foi informado, atualiza
-            if (statusAprovacao != null) {
+            // Sempre salva os campos básicos
+            usuarioService.salvar(usuario);
+
+            // Atualiza status se informado
+            if (statusAprovacao != null && !statusAprovacao.isBlank()) {
                 try {
                     StatusAprovacao status = StatusAprovacao.valueOf(statusAprovacao);
                     if (usuario instanceof Cliente cliente) {
@@ -233,11 +255,17 @@ public class AdminController {
                 } catch (IllegalArgumentException e) {
                     // Status inválido, ignora
                 }
-            } else {
-                usuarioService.salvar(usuario);
             }
 
             redirectAttributes.addFlashAttribute("sucesso", "Dados do usuário atualizados com sucesso!");
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "Erro ao atualizar usuário.";
+            if (msg.toLowerCase().contains("email")) {
+                msg = "Este e-mail já está em uso por outro usuário.";
+            } else if (msg.toLowerCase().contains("cpf")) {
+                msg = "Este CPF já está em uso por outro usuário.";
+            }
+            redirectAttributes.addFlashAttribute("erro", msg);
         }
         return "redirect:/admin/usuarios";
     }

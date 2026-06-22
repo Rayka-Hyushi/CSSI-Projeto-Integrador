@@ -112,7 +112,7 @@
                     <h5 class="modal-title">Editar Dados do Usuário</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/admin/usuarios/editar}" method="post" onsubmit="return cleanUserFields(this);">
+                <form th:action="@{/admin/usuarios/editar}" method="post">
                     <div class="modal-body">
                         <div class="row g-3">
                             <!-- Foto do Perfil (se existir) -->
@@ -452,23 +452,6 @@
             document.addEventListener('shown.bs.modal', function () {
                 attachFormatting();
             });
-
-            // Remove non-digit characters before submitting the edit user form
-            window.cleanUserFields = function (form) {
-                try {
-                    var cpf = form.querySelector('.cpf-field');
-                    var whatsapp = form.querySelector('.whatsapp-field');
-                    if (cpf && cpf.value) {
-                        cpf.value = cpf.value.replace(/\D+/g, '');
-                    }
-                    if (whatsapp && whatsapp.value) {
-                        whatsapp.value = whatsapp.value.replace(/\D+/g, '');
-                    }
-                } catch (e) {
-                    // fail silently — let the form submit
-                }
-                return true;
-            };
         })();
     </script>
 </body>

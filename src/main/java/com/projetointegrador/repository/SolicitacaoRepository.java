@@ -12,4 +12,8 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     List<Solicitacao> findByStatusSolicitacao(StatusAprovacao statusSolicitacao);
 
     long countByStatusSolicitacao(StatusAprovacao statusSolicitacao);
+
+    List<Solicitacao> findByUsuarioId(Long usuarioId);
+
+    void deleteByUsuarioId(Long usuarioId);
 }

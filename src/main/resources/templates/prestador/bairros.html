@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/navbar :: head('Editar Bairros')}"></head>
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="bi bi-geo-alt me-2 text-primary"></i>Editar Bairros Atendidos
+            </h2>
+            <a th:href="@{/prestador/inicio}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+        </div>
+
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Selecione os bairros que você atende</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/prestador/bairros/atualizar}" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4 col-lg-3" th:each="bairro : ${todosOsBairros}">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                    name="bairros" th:value="${bairro.id}"
+                                    th:id="'bairro_' + ${bairro.id}"
+                                    th:checked="${prestador.bairros != null and prestador.bairros.contains(bairro)}">
+                                <label class="form-check-label" th:for="'bairro_' + ${bairro.id}"
+                                    th:text="${bairro.nomeBairro}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(todosOsBairros)}" class="text-center text-muted py-4">
+                        Nenhum bairro cadastrado no sistema.
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a th:href="@{/prestador/inicio}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+
+</html>

@@ -15,6 +15,8 @@ import com.projetointegrador.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.security.SecureRandom;
 
 /**
  * Controller para gerenciar a autenticao e redirecionamento dos usurios aps o
@@ -237,5 +239,54 @@ public class AutenticacaoController {
             mensagemErro = "Esta placa de veículo já está cadastrada.";
         }
         return mensagemErro;
+    }
+
+    @GetMapping("/recuperar-senha")
+    public String abrirRecuperarSenha() {
+        return "recuperar-senha";
+    }
+
+    @PostMapping("/recuperar-senha")
+    public String recuperarSenha(
+            @RequestParam("email") String email,
+            @RequestParam("cpf") String cpf,
+            Model model) {
+
+        String cpfDigitos = cpf != null ? cpf.replaceAll("\\D+", "") : "";
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorEmail(email);
+
+        if (usuarioOpt.isEmpty()) {
+            model.addAttribute("erro", "E-mail e CPF não correspondem a nenhum usuário cadastrado.");
+            model.addAttribute("email", email);
+            model.addAttribute("cpf", cpf);
+            return "recuperar-senha";
+        }
+
+        // Normaliza o CPF armazenado para comparação (pode ter formatação ou não)
+        String cpfArmazenado = usuarioOpt.get().getCpf() != null ? usuarioOpt.get().getCpf().replaceAll("\\D+", "") : "";
+        if (!cpfDigitos.equals(cpfArmazenado)) {
+            model.addAttribute("erro", "E-mail e CPF não correspondem a nenhum usuário cadastrado.");
+            model.addAttribute("email", email);
+            model.addAttribute("cpf", cpf);
+            return "recuperar-senha";
+        }
+
+        String novaSenha = gerarSenhaAleatoria(8);
+        Usuario usuario = usuarioOpt.get();
+        usuario.setSenha(novaSenha);
+        usuarioService.salvar(usuario);
+
+        model.addAttribute("novaSenha", novaSenha);
+        return "recuperar-senha";
+    }
+
+    private String gerarSenhaAleatoria(int tamanho) {
+        String caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(tamanho);
+        for (int i = 0; i < tamanho; i++) {
+            sb.append(caracteres.charAt(random.nextInt(caracteres.length())));
+        }
+        return sb.toString();
     }
 }

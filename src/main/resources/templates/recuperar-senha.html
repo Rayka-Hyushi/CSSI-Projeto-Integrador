@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head('Recuperar Senha')}">
+    <title>Recuperar Senha</title>
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="flex-grow-1 d-flex align-items-center justify-content-center">
+    <div class="card shadow-sm" style="width: 100%; max-width: 450px;">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <i class="bi bi-key fs-1 text-primary"></i>
+                <h2 class="fw-bold mt-2">Recuperar Senha</h2>
+                <p class="text-muted small">Informe seus dados para gerar uma nova senha temporária.</p>
+            </div>
+
+            <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+            <div th:if="${novaSenha}" class="alert alert-success">
+                <h6 class="alert-heading fw-bold"><i class="bi bi-check-circle me-2"></i>Senha gerada com sucesso!</h6>
+                <p class="mb-2">Use a senha abaixo para fazer login. Recomendamos alterá-la depois no seu perfil.</p>
+                <div class="bg-white rounded p-3 text-center border">
+                    <code class="fs-5 fw-bold text-primary" th:text="${novaSenha}">senha123</code>
+                </div>
+                <hr class="my-3">
+                <div class="text-center">
+                    <a th:href="@{/}" class="btn btn-primary">Fazer Login</a>
+                </div>
+            </div>
+
+            <form th:if="${novaSenha == null}" th:action="@{/recuperar-senha}" method="post">
+                <div class="mb-3">
+                    <label for="emailRecupera" class="form-label">E-mail</label>
+                    <input type="email" class="form-control" id="emailRecupera" name="email"
+                        th:value="${email}" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label for="cpfRecupera" class="form-label">CPF</label>
+                    <input type="text" class="form-control" id="cpfRecupera" name="cpf"
+                        th:value="${cpf}" required>
+                </div>
+                <div class="d-grid gap-2 mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg">Gerar Nova Senha</button>
+                </div>
+                <div class="text-center">
+                    <a th:href="@{/}" class="text-muted small text-decoration-none">Voltar ao login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
+</body>
+</html>

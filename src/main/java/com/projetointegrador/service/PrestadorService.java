@@ -36,8 +36,9 @@ public class PrestadorService {
     }
 
     public Prestador salvar(Prestador prestador) {
-        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com
-        // $2a$, $2b$ ou $2y$)
+        prestador.setCpf(formatarCpf(prestador.getCpf()));
+        prestador.setWhatsapp(formatarWhatsapp(prestador.getWhatsapp()));
+
         if (prestador.getSenha() != null && !prestador.getSenha().isEmpty()) {
             String senha = prestador.getSenha();
             if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
@@ -75,5 +76,27 @@ public class PrestadorService {
             prestador.setStatusAprovacao(status);
             return prestadorRepository.save(prestador);
         }).orElseThrow(() -> new RuntimeException("Prestador não encontrado"));
+    }
+
+    private static String formatarCpf(String cpf) {
+        if (cpf == null) return "";
+        String digitos = cpf.replaceAll("\\D+", "");
+        if (digitos.length() != 11) return digitos;
+        return digitos.substring(0, 3) + "." + digitos.substring(3, 6) + "." + digitos.substring(6, 9) + "-" + digitos.substring(9);
+    }
+
+    private static String formatarWhatsapp(String whatsapp) {
+        if (whatsapp == null) return "";
+        String digitos = whatsapp.replaceAll("\\D+", "");
+        if (digitos.length() > 11 && digitos.startsWith("55")) {
+            digitos = digitos.substring(2);
+        }
+        digitos = digitos.substring(0, Math.min(digitos.length(), 11));
+        if (digitos.length() == 11) {
+            return "(" + digitos.substring(0, 2) + ") " + digitos.substring(2, 7) + "-" + digitos.substring(7);
+        } else if (digitos.length() == 10) {
+            return "(" + digitos.substring(0, 2) + ") " + digitos.substring(2, 6) + "-" + digitos.substring(6);
+        }
+        return digitos;
     }
 }

@@ -4,6 +4,7 @@ import com.projetointegrador.model.Prestador;
 import com.projetointegrador.model.Solicitacao;
 import com.projetointegrador.model.StatusAprovacao;
 import com.projetointegrador.model.TipoSolicitacao;
+import com.projetointegrador.service.BairroService;
 import com.projetointegrador.service.PrestadorService;
 import com.projetointegrador.service.SolicitacaoService;
 
@@ -32,6 +33,9 @@ public class PrestadorController {
 
     @Autowired
     private SolicitacaoService solicitacaoService;
+
+    @Autowired
+    private BairroService bairroService;
 
     @GetMapping("/inicio")
     @Transactional(readOnly = true)
@@ -132,11 +136,58 @@ public class PrestadorController {
                 sol.setDetalhes(detalhes);
 
                 solicitacaoService.criar(sol);
-                redirectAttributes.addFlashAttribute("sucesso", "Solicitação de cadastro de veículo enviada com sucesso! Aguarde a aprovação.");
+                redirectAttributes.addFlashAttribute("sucesso",
+                        "Solicitação de cadastro de veículo enviada com sucesso! Aguarde a aprovação.");
             } else {
                 redirectAttributes.addFlashAttribute("erro", "Erro ao localizar seu perfil.");
             }
         }
         return "redirect:/prestador/veiculos";
+    }
+
+    @GetMapping("/bairros")
+    @Transactional(readOnly = true)
+    public String editarBairros(Authentication authentication, Model model) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/";
+        }
+        String email = authentication.getName();
+        Optional<Prestador> prestadorOpt = prestadorService.buscarPorEmail(email);
+        if (prestadorOpt.isPresent()) {
+            Prestador prestador = prestadorOpt.get();
+            if (prestador.getBairros() != null) {
+                prestador.getBairros().size();
+            }
+            model.addAttribute("prestador", prestador);
+            model.addAttribute("todosOsBairros", bairroService.listarTodos());
+        }
+        return "prestador/bairros";
+    }
+
+    @PostMapping("/bairros/atualizar")
+    @Transactional
+    public String atualizarBairros(
+            @RequestParam(value = "bairros", required = false) java.util.List<Long> bairrosIds,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/";
+        }
+        String email = authentication.getName();
+        Optional<Prestador> prestadorOpt = prestadorService.buscarPorEmail(email);
+        if (prestadorOpt.isPresent()) {
+            Prestador prestador = prestadorOpt.get();
+            if (bairrosIds != null && !bairrosIds.isEmpty()) {
+                prestador.setBairros(bairroService.buscarPorIds(bairrosIds));
+            } else {
+                prestador.setBairros(new java.util.ArrayList<>());
+            }
+            prestadorService.salvar(prestador);
+            redirectAttributes.addFlashAttribute("sucesso", "Bairros atendidos atualizados com sucesso!");
+        } else {
+            redirectAttributes.addFlashAttribute("erro", "Prestador não encontrado.");
+        }
+        return "redirect:/prestador/inicio";
     }
 }
