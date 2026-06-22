@@ -1,6 +1,7 @@
 package com.projetointegrador.controller;
 
 import com.projetointegrador.model.Usuario;
+import com.projetointegrador.exceptions.SizeExceededException;
 import com.projetointegrador.model.Prestador;
 import com.projetointegrador.model.Solicitacao;
 import com.projetointegrador.model.StatusAprovacao;
@@ -49,7 +50,7 @@ public class PerfilController {
     @GetMapping("/perfil")
     public String abrirPerfil(Model model, Authentication authentication) {
         model.addAttribute("servicosDisponiveis", servicoAdicionalService.listarTodos());
-        
+
         Optional<Prestador> prestadorOpt = prestadorService.buscarPorEmail(authentication.getName());
         if (prestadorOpt.isPresent()) {
             List<Long> servicosIds = prestadorOpt.get().getServicos().stream()
@@ -57,17 +58,17 @@ public class PerfilController {
                     .collect(Collectors.toList());
             model.addAttribute("servicosIds", servicosIds);
         }
-        
+
         return "perfil/profile";
     }
 
     @PostMapping("/perfil/servicos")
     public String atualizarServicos(@RequestParam(value = "servicos", required = false) List<Long> servicosIds,
-                                   Authentication authentication,
-                                   RedirectAttributes redirectAttributes) {
-        
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
         Optional<Prestador> prestadorOpt = prestadorService.buscarPorEmail(authentication.getName());
-        
+
         if (prestadorOpt.isPresent()) {
             Prestador p = prestadorOpt.get();
             if (servicosIds != null && !servicosIds.isEmpty()) {
@@ -80,14 +81,14 @@ public class PerfilController {
         } else {
             redirectAttributes.addFlashAttribute("erro", "Apenas prestadores podem editar serviços oferecidos.");
         }
-        
+
         return "redirect:/perfil";
     }
 
     @PostMapping("/perfil/foto")
     public String uploadFotoPerfil(@RequestParam("foto") MultipartFile foto,
-                                   Authentication authentication,
-                                   RedirectAttributes redirectAttributes) {
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
 
         if (foto.isEmpty()) {
             redirectAttributes.addFlashAttribute("erro", "Selecione uma imagem para fazer upload.");
@@ -119,9 +120,12 @@ public class PerfilController {
                 redirectAttributes.addFlashAttribute("sucesso", "Foto de perfil atualizada com sucesso!");
             }
 
+        } catch (SizeExceededException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
         } catch (IOException e) {
-            System.err.println("Erro ao fazer upload da imagem: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("erro", "Erro ao fazer upload da imagem.");
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
         }
 
         return "redirect:/perfil";
@@ -129,51 +133,57 @@ public class PerfilController {
 
     @PostMapping("/perfil/dados")
     public String atualizarDadosAdmin(@RequestParam("nomeCompleto") String nome,
-                                      @RequestParam("email") String email,
-                                      @RequestParam("whatsapp") String whatsapp,
-                                      @RequestParam(value = "cpf", required = false) String cpf,
-                                      @RequestParam(value = "senha", required = false) String novaSenha,
-                                      Authentication authentication,
-                                      RedirectAttributes redirectAttributes) {
+            @RequestParam("email") String email,
+            @RequestParam("whatsapp") String whatsapp,
+            @RequestParam(value = "cpf", required = false) String cpf,
+            @RequestParam(value = "senha", required = false) String novaSenha,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
 
         Optional<Usuario> userOpt = usuarioService.buscarPorEmail(authentication.getName());
-        if (userOpt.isPresent()) {
-            Usuario u = userOpt.get();
-            // Permite atualizar apenas se for admin.
-            if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                u.setNomeCompleto(nome);
-                u.setEmail(email);
-                u.setWhatsapp(whatsapp);
 
-                if (cpf != null && !cpf.isBlank()) {
-                    u.setCpf(cpf);
-                }
+        try {
+            if (userOpt.isPresent()) {
+                Usuario u = userOpt.get();
+                // Permite atualizar apenas se for admin.
+                if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                    u.setNomeCompleto(nome);
+                    u.setEmail(email);
+                    u.setWhatsapp(whatsapp);
 
-                if (novaSenha != null && !novaSenha.isBlank()) {
-                    u.setSenha(novaSenha);  // Service vai encriptar
-                }
+                    if (cpf != null && !cpf.isBlank()) {
+                        u.setCpf(cpf);
+                    }
 
-                usuarioService.salvar(u);
-                redirectAttributes.addFlashAttribute("sucesso", "Dados atualizados com sucesso!");
-            } else {
-                // Se for um usuário comum, permite apenas atualizar a senha
-                if (novaSenha != null && !novaSenha.isBlank()) {
-                    u.setSenha(novaSenha);
+                    if (novaSenha != null && !novaSenha.isBlank()) {
+                        u.setSenha(novaSenha); // Service vai encriptar
+                    }
+
                     usuarioService.salvar(u);
-                    redirectAttributes.addFlashAttribute("sucesso", "Senha atualizada com sucesso!");
+                    redirectAttributes.addFlashAttribute("sucesso", "Dados atualizados com sucesso!");
                 } else {
-                    redirectAttributes.addFlashAttribute("erro", "Você não tem permissão para alterar estes dados.");
+                    // Se for um usuário comum, permite apenas atualizar a senha
+                    if (novaSenha != null && !novaSenha.isBlank()) {
+                        u.setSenha(novaSenha);
+                        usuarioService.salvar(u);
+                        redirectAttributes.addFlashAttribute("sucesso", "Senha atualizada com sucesso!");
+                    } else {
+                        redirectAttributes.addFlashAttribute("erro",
+                                "Você não tem permissão para alterar estes dados.");
+                    }
                 }
             }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erro", e.getMessage());
         }
         return "redirect:/perfil";
     }
 
     @PostMapping("/perfil/solicitacao")
     public String enviarSolicitacaoSuporte(@RequestParam("assunto") String assunto,
-                                           @RequestParam("mensagem") String mensagem,
-                                           Authentication authentication,
-                                           RedirectAttributes redirectAttributes) {
+            @RequestParam("mensagem") String mensagem,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
 
         var userOpt = usuarioService.buscarPorEmail(authentication.getName());
         if (userOpt.isPresent()) {
@@ -203,16 +213,18 @@ public class PerfilController {
 
     @PostMapping("/perfil/solicitacao/senha")
     public String solicitarRecuperacaoSenha(@RequestParam("nome") String nome,
-                                            @RequestParam("cpf") String cpf,
-                                            @RequestParam("email") String email,
-                                            RedirectAttributes redirectAttributes) {
+            @RequestParam("cpf") String cpf,
+            @RequestParam("email") String email,
+            RedirectAttributes redirectAttributes) {
 
         var userOpt = usuarioService.buscarPorEmail(email);
 
         if (userOpt.isPresent()) {
             Usuario usuario = userOpt.get();
-            boolean nomeConfere = usuario.getNomeCompleto() != null && usuario.getNomeCompleto().trim().equalsIgnoreCase(nome.trim());
-            boolean cpfConfere = usuario.getCpf() != null && usuario.getCpf().replaceAll("\\D", "").equals(cpf.replaceAll("\\D", ""));
+            boolean nomeConfere = usuario.getNomeCompleto() != null
+                    && usuario.getNomeCompleto().trim().equalsIgnoreCase(nome.trim());
+            boolean cpfConfere = usuario.getCpf() != null
+                    && usuario.getCpf().replaceAll("\\D", "").equals(cpf.replaceAll("\\D", ""));
 
             if (nomeConfere && cpfConfere) {
                 Solicitacao sol = new Solicitacao();
@@ -223,13 +235,14 @@ public class PerfilController {
                         "Solicitação de recuperação de senha via tela de login.\n" +
                                 "Nome informado: " + nome + "\n" +
                                 "CPF informado: " + cpf + "\n" +
-                                "E-mail informado: " + email
-                );
+                                "E-mail informado: " + email);
 
                 solicitacaoService.criar(sol);
-                redirectAttributes.addFlashAttribute("sucesso", "Solicitação de recuperação enviada! Aguarde as instruções da nossa equipe no seu e-mail.");
+                redirectAttributes.addFlashAttribute("sucesso",
+                        "Solicitação de recuperação enviada! Aguarde as instruções da nossa equipe no seu e-mail.");
             } else {
-                redirectAttributes.addFlashAttribute("erro", "Os dados informados não conferem com um usuário cadastrado.");
+                redirectAttributes.addFlashAttribute("erro",
+                        "Os dados informados não conferem com um usuário cadastrado.");
             }
         } else {
             redirectAttributes.addFlashAttribute("erro", "Não foi possível localizar um usuário com esse e-mail.");

@@ -1,72 +1,136 @@
 package com.projetointegrador.service;
 
+import com.projetointegrador.exceptions.SizeExceededException;
+import com.projetointegrador.model.TipoUsuario;
 import com.projetointegrador.model.Usuario;
 import com.projetointegrador.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	@Autowired
+	private ClienteService clienteService;
 
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findAll();
-    }
+	@Autowired
+	private PrestadorService prestadorService;
 
-    public Optional<Usuario> buscarPorId(Long id) {
-        return usuarioRepository.findById(id);
-    }
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    public Optional<Usuario> buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
-    }
+	public List<Usuario> listarTodos() {
+		return usuarioRepository.findAll();
+	}
 
-    public Usuario salvar(Usuario usuario) {
-        // Apenas encripta se a senha não estiver já criptografada (BCrypt começa com $2a$, $2b$ ou $2y$)
-        if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
-            String senha = usuario.getSenha();
-            if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
-                usuario.setSenha(passwordEncoder.encode(senha));
-            }
-        }
-        return usuarioRepository.save(usuario);
-    }
+	public Optional<Usuario> buscarPorId(Long id) {
+		return usuarioRepository.findById(id);
+	}
 
-    public Usuario atualizar(Long id, Usuario usuarioAtualizado) {
-        return usuarioRepository.findById(id).map(usuario -> {
-            usuario.setNomeCompleto(usuarioAtualizado.getNomeCompleto());
-            usuario.setEmail(usuarioAtualizado.getEmail());
-            if (usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().isEmpty()) {
-                String senha = usuarioAtualizado.getSenha();
-                if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
-                    usuario.setSenha(passwordEncoder.encode(senha));
-                } else {
-                    usuario.setSenha(senha);
-                }
-            }
-            usuario.setWhatsapp(usuarioAtualizado.getWhatsapp());
-            return usuarioRepository.save(usuario);
-        }).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-    }
+	public Optional<Usuario> buscarPorEmail(String email) {
+		return usuarioRepository.findByEmail(email);
+	}
 
-    public void deletar(Long id) {
-        usuarioRepository.deleteById(id);
-    }
+	public Optional<Usuario> buscarPorCpf(String cpf) {
+		return usuarioRepository.findByCpf(cpf);
+	}
 
-    public long contarUsuariosAtivos() {
-        return usuarioRepository.countTotalUsuariosAtivos();
-    }
+	public Usuario salvar(Usuario usuario) {
+		// 1. Validar se o e-mail já está em uso por outro usuário
+		Optional<Usuario> usuarioPorEmail = buscarPorEmail(usuario.getEmail());
+		if (usuarioPorEmail.isPresent() && !usuarioPorEmail.get().getId().equals(usuario.getId())) {
+			throw new RuntimeException("Email já em uso por outro usuário");
+		}
 
-    public long contar() {
-        return usuarioRepository.count();
-    }
+		// 2. Validar se o CPF já está em uso por outro usuário
+		Optional<Usuario> usuarioPorCpf = buscarPorCpf(usuario.getCpf());
+		if (usuarioPorCpf.isPresent() && !usuarioPorCpf.get().getId().equals(usuario.getId())) {
+			throw new RuntimeException("CPF já em uso por outro usuário");
+		}
+
+		// 3. Validar foto de perfil
+		if (usuario.getProfilePhotoUrl() != null && !usuario.getProfilePhotoUrl().isEmpty()) {
+			String profilePhotoUrl = usuario.getProfilePhotoUrl();
+			if (!profilePhotoUrl.startsWith("/")) {
+				profilePhotoUrl = "/" + profilePhotoUrl;
+				usuario.setProfilePhotoUrl(profilePhotoUrl);
+			}
+
+			// Validar arquivo físico na pasta local de uploads
+			if (profilePhotoUrl.startsWith("/uploads/")) {
+				java.nio.file.Path path = java.nio.file.Paths.get(profilePhotoUrl.substring(1));
+				if (java.nio.file.Files.exists(path)) {
+					try {
+						// Validar formato do arquivo (extensões aceitas)
+						String nomeArquivo = path.getFileName().toString().toLowerCase();
+						if (!nomeArquivo.endsWith(".jpg") && !nomeArquivo.endsWith(".jpeg") &&
+								!nomeArquivo.endsWith(".png") && !nomeArquivo.endsWith(".webp")
+								&& !nomeArquivo.endsWith(".gif")) {
+							java.nio.file.Files.deleteIfExists(path);
+							throw new RuntimeException(
+									"Formato de imagem inválido. Apenas JPG, JPEG, PNG, WEBP ou GIF são permitidos.");
+						}
+
+						// Validar tamanho (tamanho máximo de 2MB)
+						long maxBytes = 2 * 1024 * 1024; // 2MB
+						if (java.nio.file.Files.size(path) > maxBytes) {
+							java.nio.file.Files.deleteIfExists(path);
+							throw new SizeExceededException();
+						}
+					} catch (IOException e) {
+						throw new RuntimeException("Erro ao validar arquivo de foto de perfil: " + e.getMessage());
+					}
+				}
+			}
+		}
+
+		// 4. Criptografia de senha se aplicável
+		if (usuario.getSenha() != null && !usuario.getSenha().isEmpty()) {
+			String senha = usuario.getSenha();
+			if (!senha.startsWith("$2a$") && !senha.startsWith("$2b$") && !senha.startsWith("$2y$")) {
+				usuario.setSenha(passwordEncoder.encode(senha));
+			}
+		}
+
+		return usuarioRepository.save(usuario);
+	}
+
+	public void deletar(Long id) {
+		if (usuarioRepository.findById(id).get().getTipoUsuario().equals(TipoUsuario.ROLE_ADMIN)) {
+			throw new RuntimeException("Administradores não podem ser deletados.");
+		} else if (!usuarioRepository.existsById(id)) {
+			throw new RuntimeException("Usuário não encontrado.");
+		} else {
+			if (buscarPorId(id).get().getTipoUsuario().equals(TipoUsuario.ROLE_CLIENTE)) {
+				clienteService.deletar(id);
+			} else {
+				prestadorService.deletar(id);
+			}
+			usuarioRepository.deleteById(id);
+		}
+	}
+
+	public boolean existePorCpf(String cpf) {
+		return usuarioRepository.existsByCpf(cpf);
+	}
+
+	public boolean existePorEmail(String email) {
+		return usuarioRepository.existsByEmail(email);
+	}
+
+	public long contarUsuariosAtivos() {
+		return usuarioRepository.countTotalUsuariosAtivos();
+	}
+
+	public long contar() {
+		return usuarioRepository.count();
+	}
 }

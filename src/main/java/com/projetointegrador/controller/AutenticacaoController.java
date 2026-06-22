@@ -96,13 +96,21 @@ public class AutenticacaoController {
             @RequestParam(value = "abertoFechado", required = false) String abertoFechadoStr,
             @RequestParam(value = "servicos", required = false) List<Long> servicosIds,
             @RequestParam(value = "bairros", required = false) List<Long> bairrosIds,
-
+            Model model,
             RedirectAttributes redirectAttributes) {
 
         try {
             TipoUsuario tipoUsuario = TipoUsuario.valueOf(tipoUsuarioStr.toUpperCase());
             Usuario novoUsuario;
             boolean isPrestador = (tipoUsuario == TipoUsuario.ROLE_PRESTADOR);
+
+            // Validações prévias para capturar erros dentro da transação antes de comitar
+            if (usuarioService.existePorEmail(email)) {
+                throw new IllegalArgumentException("Este endereço de e-mail já está cadastrado em nosso sistema.");
+            }
+            if (usuarioService.existePorCpf(cpf)) {
+                throw new IllegalArgumentException("Este CPF já está cadastrado em nosso sistema.");
+            }
 
             // Validação prévia de placa duplicada ANTES de persistir qualquer entidade
             if (isPrestador && placaVeiculo != null && !placaVeiculo.isBlank()) {
@@ -152,7 +160,7 @@ public class AutenticacaoController {
                 v.setCapacidadeCarga(capacidade);
                 v.setFechado("FECHADO".equalsIgnoreCase(abertoFechadoStr));
                 veiculoService.salvar(v);
-                
+
                 novoUsuario = p;
 
             } else {
@@ -190,23 +198,32 @@ public class AutenticacaoController {
         } catch (Exception e) {
             String mensagemErro = getMensagemErro(e);
 
-            redirectAttributes.addFlashAttribute("erro", mensagemErro);
-            redirectAttributes.addFlashAttribute("nomeCompleto", nomeCompleto);
-            redirectAttributes.addFlashAttribute("email", email);
-            redirectAttributes.addFlashAttribute("whatsapp", whatsapp);
-            redirectAttributes.addFlashAttribute("cpf", cpf);
-            redirectAttributes.addFlashAttribute("tipoUsuario", tipoUsuarioStr);
-            redirectAttributes.addFlashAttribute("placaVeiculo", placaVeiculo);
-            redirectAttributes.addFlashAttribute("tipoVeiculo", tipoVeiculoStr);
-            redirectAttributes.addFlashAttribute("capacidadeModel", capacidade);
-            redirectAttributes.addFlashAttribute("abertoFechado", abertoFechadoStr);
-            redirectAttributes.addFlashAttribute("servicosIds", servicosIds);
-            redirectAttributes.addFlashAttribute("bairrosIds", bairrosIds);
-            return "redirect:/cadastro";
+            model.addAttribute("erro", mensagemErro);
+            model.addAttribute("nomeCompleto", nomeCompleto);
+            model.addAttribute("email", email);
+            model.addAttribute("whatsapp", whatsapp);
+            model.addAttribute("cpf", cpf);
+            model.addAttribute("tipoUsuario", tipoUsuarioStr);
+            model.addAttribute("placaVeiculo", placaVeiculo);
+            model.addAttribute("tipoVeiculo", tipoVeiculoStr);
+            model.addAttribute("capacidadeModel", capacidade);
+            model.addAttribute("abertoFechado", abertoFechadoStr);
+            model.addAttribute("servicosIds", servicosIds);
+            model.addAttribute("bairrosIds", bairrosIds);
+
+            // Popula as dependências de listas que a página de cadastro precisa renderizar
+            model.addAttribute("bairros", bairroService.listarTodos());
+            model.addAttribute("servicos", servicoAdicionalService.listarTodos());
+
+            return "cadastro";
         }
     }
 
     private static String getMensagemErro(Exception e) {
+        if (e instanceof IllegalArgumentException && e.getMessage() != null) {
+            return e.getMessage();
+        }
+
         String mensagemErro = "Ocorreu um erro inesperado ao realizar seu cadastro. Por favor, tente novamente.";
         String originalMsg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
 

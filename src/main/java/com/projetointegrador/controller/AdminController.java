@@ -51,7 +51,6 @@ public class AdminController {
     @Autowired
     private PrestadorService prestadorService;
 
-
     @GetMapping("/usuarios")
     public String usuarios(Model model) {
         // Obter o usuário admin atualmente autenticado
@@ -81,14 +80,26 @@ public class AdminController {
         return "admin/usuarios";
     }
 
+    @PostMapping("/usuarios/remover")
+    public String removerUsuario(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
+        if (usuarioOpt.isPresent()) {
+            usuarioService.deletar(id);
+            redirectAttributes.addFlashAttribute("sucesso", "Usuário removido com sucesso.");
+        } else {
+            redirectAttributes.addFlashAttribute("erro", "Usuário não encontrado.");
+        }
+        return "redirect:/admin/usuarios";
+    }
+
     @PostMapping("/usuarios/veiculo/salvar")
     public String salvarVeiculo(@RequestParam(value = "id", required = false) Long id,
-                                @RequestParam("prestadorId") Long prestadorId,
-                                @RequestParam("placa") String placa,
-                                @RequestParam("tipo") String tipoStr,
-                                @RequestParam(value = "capacidade", required = false) Double capacidade,
-                                @RequestParam(value = "fechado", required = false) String fechado,
-                                RedirectAttributes redirectAttributes) {
+            @RequestParam("prestadorId") Long prestadorId,
+            @RequestParam("placa") String placa,
+            @RequestParam("tipo") String tipoStr,
+            @RequestParam(value = "capacidade", required = false) Double capacidade,
+            @RequestParam(value = "fechado", required = false) String fechado,
+            RedirectAttributes redirectAttributes) {
 
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(prestadorId);
         if (usuarioOpt.isPresent() && usuarioOpt.get() instanceof Prestador prestador) {
@@ -135,7 +146,8 @@ public class AdminController {
     public String solicitacoes(Model model) {
 
         long totalPendentes = solicitacaoService.contarPorStatus(StatusAprovacao.PENDENTE);
-        long totalResolvidas = solicitacaoService.contarPorStatus(StatusAprovacao.APROVADO) + solicitacaoService.contarPorStatus(StatusAprovacao.REJEITADO);
+        long totalResolvidas = solicitacaoService.contarPorStatus(StatusAprovacao.APROVADO)
+                + solicitacaoService.contarPorStatus(StatusAprovacao.REJEITADO);
         long totalUsuarios = usuarioService.contarUsuariosAtivos();
 
         List<Solicitacao> solicitacoesPendentes = solicitacaoService.buscarPorStatus(StatusAprovacao.PENDENTE);
@@ -155,7 +167,8 @@ public class AdminController {
             Solicitacao s = solOpt.get();
             s.setStatusSolicitacao(StatusAprovacao.APROVADO);
 
-            // Se for de cadastro ou outro que envolva usuário com pendência, altera para aprovado
+            // Se for de cadastro ou outro que envolva usuário com pendência, altera para
+            // aprovado
             Usuario u = s.getUsuario();
             if (u != null) {
                 if (u instanceof Cliente cliente) {
@@ -188,16 +201,18 @@ public class AdminController {
             }
 
             solicitacaoService.atualizar(id, s);
-            redirectAttributes.addFlashAttribute("sucesso", "A solicitação foi Recusada. (Não esqueça de avisar o usuário por e-mail, se for o caso).");
+            redirectAttributes.addFlashAttribute("sucesso",
+                    "A solicitação foi Recusada. (Não esqueça de avisar o usuário por e-mail, se for o caso).");
         }
         return "redirect:/admin/solicitacoes";
     }
 
     @PostMapping("/usuarios/editar")
     public String editarUsuario(@RequestParam("id") Long id, @RequestParam("nomeCompleto") String nomeCompleto,
-                                @RequestParam("email") String email, @RequestParam("whatsapp") String whatsapp,
-                                @RequestParam("cpf") String cpf, @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao,
-                                RedirectAttributes redirectAttributes) {
+            @RequestParam("email") String email, @RequestParam("whatsapp") String whatsapp,
+            @RequestParam("cpf") String cpf,
+            @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao,
+            RedirectAttributes redirectAttributes) {
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
@@ -229,7 +244,7 @@ public class AdminController {
 
     @PostMapping("/usuarios/atualizar-status")
     public String atualizarStatusUsuario(@RequestParam("id") Long id, @RequestParam("status") String status,
-                                         RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
@@ -242,9 +257,8 @@ public class AdminController {
                     prestadorService.atualizarStatus(prestador.getId(), novoStatus);
                 }
 
-                String mensagem = novoStatus == StatusAprovacao.APROVADO ?
-                        "Usuário ativado com sucesso!" :
-                        "Usuário desativado com sucesso!";
+                String mensagem = novoStatus == StatusAprovacao.APROVADO ? "Usuário ativado com sucesso!"
+                        : "Usuário desativado com sucesso!";
                 redirectAttributes.addFlashAttribute("sucesso", mensagem);
             } catch (IllegalArgumentException e) {
                 redirectAttributes.addFlashAttribute("erro", "Status inválido!");

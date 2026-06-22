@@ -1,461 +1,476 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <!-- Reutiliza o fragmento 'head' do seu arquivo modelos/navbar.html -->
+
 <head th:replace="~{fragments/navbar :: head('Painel de Controle')}">
     <title>Painel de Controle</title>
 </head>
+
 <body class="d-flex flex-column min-vh-100 bg-light">
 
-<!-- Reutiliza sua navbar padrão -->
-<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+    <!-- Reutiliza sua navbar padrão -->
+    <nav th:replace="~{fragments/navbar :: navbar}"></nav>
 
-<main class="flex-grow-1 py-4">
-    <div class="container">
-        <!-- Cabeçalho da Página -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="bi bi-people me-2 text-primary"></i>Gerenciamento de Usuários
-            </h2>
-            <span class="text-muted" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
-        </div>
+    <main class="flex-grow-1 py-4">
+        <div class="container">
+            <!-- Cabeçalho da Página -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="bi bi-people me-2 text-primary"></i>Gerenciamento de Usuários
+                </h2>
+                <span class="text-muted" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span>
+            </div>
 
-        <!-- Card de Resumo -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-people fs-3 text-primary"></i>
-                        </div>
-                        <div class="ms-3">
-                            <h6 class="card-subtitle mb-1 text-muted">Total de Usuários Cadastrados</h6>
-                            <h4 class="card-title mb-0 fw-bold" th:text="${totalUsuarios}">28</h4>
+            <!-- Card de Resumo -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-people fs-3 text-primary"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-subtitle mb-1 text-muted">Total de Usuários Cadastrados</h6>
+                                <h4 class="card-title mb-0 fw-bold" th:text="${totalUsuarios}">28</h4>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div th:if="${sucesso}" class="alert alert-success mt-2 mb-4" th:text="${sucesso}"></div>
+            <div th:if="${sucesso}" class="alert alert-success mt-2 mb-4" th:text="${sucesso}"></div>
 
-        <!-- Tabela de Usuários -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Lista de Usuários Cadastrados</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Nome</th>
-                            <th>Email</th>
-                            <th>WhatsApp</th>
-                            <th>CPF</th>
-                            <th>Tipo</th>
-                            <th>Status</th>
-                            <th class="text-end">Ações</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-
-                        <tr th:if="${#lists.isEmpty(usuarios)}">
-                            <td colspan="7" class="text-center text-muted py-4">Nenhum usuário cadastrado.</td>
-                        </tr>
-
-                        <tr th:each="user : ${usuarios}">
-                            <td><strong th:text="${user.nomeCompleto}">Nome</strong></td>
-                            <td class="text-muted small" th:text="${user.email}">email@teste.com</td>
-                            <td class="text-muted small" th:text="${user.whatsapp}">(00) 0000-0000</td>
-                            <td class="text-muted small" th:text="${user.cpf}">000.000.000-00</td>
-                            <td><span class="badge bg-info" th:text="${user.tipoUsuario.name()}">CLIENTE</span></td>
-                            <td>
-                                <span class="badge bg-success"
-                                      th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">Ativo</span>
-                                <span class="badge bg-danger"
-                                      th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">Inativo</span>
-                                <span class="badge bg-warning"
-                                      th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">Pendente</span>
-                            </td>
-                            <td class="text-end">
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                                        th:data-bs-target="'#detalheModal' + ${user.id}">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+            <!-- Tabela de Usuários -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Lista de Usuários Cadastrados</h5>
                 </div>
-            </div>
-        </div>
-    </div>
-</main>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>WhatsApp</th>
+                                    <th>CPF</th>
+                                    <th>Tipo</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
 
-<!-- Modais de Edição dinâmicos -->
-<div th:each="user : ${usuarios}" class="modal fade" th:id="'detalheModal' + ${user.id}" tabindex="-1"
-     aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Dados do Usuário</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form th:action="@{/admin/usuarios/editar}" method="post" onsubmit="return cleanUserFields(this);">
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <!-- Foto do Perfil (se existir) -->
-                        <div class="col-12 text-center mb-3" th:if="${user.profilePhotoUrl}">
-                            <img th:src="${user.profilePhotoUrl}" alt="Foto de Perfil" class="rounded-circle"
-                                 style="width: 120px; height: 120px; object-fit: cover;">
-                        </div>
+                                <tr th:if="${#lists.isEmpty(usuarios)}">
+                                    <td colspan="7" class="text-center text-muted py-4">Nenhum usuário cadastrado.</td>
+                                </tr>
 
-                        <!-- ID (Hidden) -->
-                        <input type="hidden" name="id" th:value="${user.id}">
-
-                        <!-- Coluna Esquerda -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="nomeCompleto" class="form-label"><strong>Nome Completo</strong></label>
-                                <input type="text" class="form-control" id="nomeCompleto" name="nomeCompleto"
-                                       th:value="${user.nomeCompleto}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label"><strong>E-mail</strong></label>
-                                <input type="email" class="form-control" id="email" name="email"
-                                       th:value="${user.email}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="whatsapp" class="form-label"><strong>WhatsApp</strong></label>
-                                <input type="text" class="form-control whatsapp-field" id="whatsapp" name="whatsapp"
-                                       th:value="${user.whatsapp}" required>
-                            </div>
-                        </div>
-
-                        <!-- Coluna Direita -->
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="cpf" class="form-label"><strong>CPF</strong></label>
-                                <input type="text" class="form-control cpf-field" id="cpf" name="cpf"
-                                       th:value="${user.cpf}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="tipoUsuario" class="form-label"><strong>Tipo de Usuário</strong></label>
-                                <input type="text" class="form-control" id="tipoUsuario"
-                                       th:value="${user.tipoUsuario.name()}" disabled>
-                            </div>
-                            <div class="mb-3">
-                                <label for="dataCadastro" class="form-label"><strong>Data de Cadastro</strong></label>
-                                <input type="text" class="form-control" id="dataCadastro"
-                                       th:value="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}" disabled>
-                            </div>
-                            <!-- Status select removed: control is via Aprovar / Desativar buttons -->
-                        </div>
-
-                        <!-- Status do Usuário -->
-                        <div class="col-12">
-                            <div class="alert alert-success" role="alert"
-                                 th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
-                                <i class="bi bi-check-circle me-2"></i>
-                                <strong>Usuário ativo e aprovado no sistema</strong>
-                            </div>
-                            <div class="alert alert-danger" role="alert"
-                                 th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">
-                                <i class="bi bi-x-circle me-2"></i>
-                                <strong>Usuário inativo</strong> - Cadastro foi recusado
-                            </div>
-                            <div class="alert alert-warning" role="alert"
-                                 th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">
-                                <i class="bi bi-exclamation-circle me-2"></i>
-                                <strong>Cadastro pendente</strong> - Aguardando aprovação
-                            </div>
-                        </div>
-
-                        <!-- Veículos (apenas para prestadores) - MOVED OUTSIDE TO AVOID NESTED FORMS -->
-                        <div class="col-12 mt-3" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
-                            <h6 class="mb-2">
-                                <i class="bi bi-truck-front me-2"></i>Veículos do Prestador
-                            </h6>
-                            <div th:if="${#lists.isEmpty(veiculosMap[user.id])}" class="text-muted small">
-                                Nenhum veículo cadastrado.
-                            </div>
-                            <div th:if="!${#lists.isEmpty(veiculosMap[user.id])}" class="table-responsive">
-                                <table class="table table-sm table-hover mb-2">
-                                    <thead class="table-light">
-                                    <tr>
-                                        <th class="ps-2">Placa</th>
-                                        <th>Tipo</th>
-                                        <th>Capacidade (kg)</th>
-                                        <th class="text-center">Fechado</th>
-                                        <th class="text-end pe-2">Ações</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="v : ${veiculosMap[user.id]}">
-                                        <td class="ps-2"><code th:text="${v.placa}">ABC1D23</code></td>
-                                        <td><small th:text="${v.tipo.getDescricao()}">Fiorino</small></td>
-                                        <td><small
-                                                th:text="${#numbers.formatDecimal(v.capacidadeCarga, 0, 'DEFAULT', 1, 'DEFAULT')}">100.0</small>
-                                        </td>
-                                        <td class="text-center">
-                                            <small class="badge" th:class="${v.fechado ? 'bg-warning' : 'bg-secondary'}"
-                                                   th:text="${v.fechado ? 'Sim' : 'Não'}">Não</small>
-                                        </td>
-                                        <td class="text-end pe-2">
-                                            <button type="button" class="btn btn-xs btn-outline-primary"
-                                                    data-bs-toggle="modal"
-                                                    th:data-bs-target="'#editVeiculoModal' + ${v.id}">
-                                                <i class="bi bi-pencil"></i>
+                                <tr th:each="user : ${usuarios}">
+                                    <td><strong th:text="${user.nomeCompleto}">Nome</strong></td>
+                                    <td class="text-muted small" th:text="${user.email}">email@teste.com</td>
+                                    <td class="text-muted small" th:text="${user.whatsapp}">(00) 0000-0000</td>
+                                    <td class="text-muted small" th:text="${user.cpf}">000.000.000-00</td>
+                                    <td><span class="badge bg-info" th:text="${user.tipoUsuario.name()}">CLIENTE</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success"
+                                            th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">Ativo</span>
+                                        <span class="badge bg-danger"
+                                            th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">Inativo</span>
+                                        <span class="badge bg-warning"
+                                            th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">Pendente</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                            th:data-bs-target="'#detalheModal' + ${user.id}">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+                                        <form th:action="@{/admin/usuarios/remover}" method="post"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('Tem certeza de que deseja remover este usuário permanentemente?');">
+                                            <input type="hidden" name="id" th:value="${user.id}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Deletar
                                             </button>
-                                            <form th:action="@{/admin/usuarios/veiculo/remover}" method="post"
-                                                  style="display:inline;">
-                                                <input type="hidden" name="id" th:value="${v.id}"/>
-                                                <button type="submit" class="btn btn-xs btn-danger"
-                                                        onclick="return confirm('Tem certeza?')">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modais de Edição dinâmicos -->
+    <div th:each="user : ${usuarios}" class="modal fade" th:id="'detalheModal' + ${user.id}" tabindex="-1"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Dados do Usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form th:action="@{/admin/usuarios/editar}" method="post" onsubmit="return cleanUserFields(this);">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Foto do Perfil (se existir) -->
+                            <div class="col-12 text-center mb-3" th:if="${user.profilePhotoUrl}">
+                                <img th:src="${user.profilePhotoUrl}" alt="Foto de Perfil" class="rounded-circle"
+                                    style="width: 120px; height: 120px; object-fit: cover;">
                             </div>
-                            <!-- Botão para adicionar novo veículo -->
-                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
+
+                            <!-- ID (Hidden) -->
+                            <input type="hidden" name="id" th:value="${user.id}">
+
+                            <!-- Coluna Esquerda -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="nomeCompleto" class="form-label"><strong>Nome Completo</strong></label>
+                                    <input type="text" class="form-control" id="nomeCompleto" name="nomeCompleto"
+                                        th:value="${user.nomeCompleto}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label"><strong>E-mail</strong></label>
+                                    <input type="email" class="form-control" id="email" name="email"
+                                        th:value="${user.email}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="whatsapp" class="form-label"><strong>WhatsApp</strong></label>
+                                    <input type="text" class="form-control whatsapp-field" id="whatsapp" name="whatsapp"
+                                        th:value="${user.whatsapp}" required>
+                                </div>
+                            </div>
+
+                            <!-- Coluna Direita -->
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cpf" class="form-label"><strong>CPF</strong></label>
+                                    <input type="text" class="form-control cpf-field" id="cpf" name="cpf"
+                                        th:value="${user.cpf}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="tipoUsuario" class="form-label"><strong>Tipo de Usuário</strong></label>
+                                    <input type="text" class="form-control" id="tipoUsuario"
+                                        th:value="${user.tipoUsuario.name()}" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dataCadastro" class="form-label"><strong>Data de
+                                            Cadastro</strong></label>
+                                    <input type="text" class="form-control" id="dataCadastro"
+                                        th:value="${#temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm')}" disabled>
+                                </div>
+                                <!-- Status select removed: control is via Aprovar / Desativar buttons -->
+                            </div>
+
+                            <!-- Status do Usuário -->
+                            <div class="col-12">
+                                <div class="alert alert-success" role="alert"
+                                    th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    <strong>Usuário ativo e aprovado no sistema</strong>
+                                </div>
+                                <div class="alert alert-danger" role="alert"
+                                    th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).REJEITADO}">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    <strong>Usuário inativo</strong> - Cadastro foi recusado
+                                </div>
+                                <div class="alert alert-warning" role="alert"
+                                    th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).PENDENTE}">
+                                    <i class="bi bi-exclamation-circle me-2"></i>
+                                    <strong>Cadastro pendente</strong> - Aguardando aprovação
+                                </div>
+                            </div>
+
+                            <!-- Veículos (apenas para prestadores) - MOVED OUTSIDE TO AVOID NESTED FORMS -->
+                            <div class="col-12 mt-3" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
+                                <h6 class="mb-2">
+                                    <i class="bi bi-truck-front me-2"></i>Veículos do Prestador
+                                </h6>
+                                <div th:if="${#lists.isEmpty(veiculosMap[user.id])}" class="text-muted small">
+                                    Nenhum veículo cadastrado.
+                                </div>
+                                <div th:if="!${#lists.isEmpty(veiculosMap[user.id])}" class="table-responsive">
+                                    <table class="table table-sm table-hover mb-2">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-2">Placa</th>
+                                                <th>Tipo</th>
+                                                <th>Capacidade (kg)</th>
+                                                <th class="text-center">Fechado</th>
+                                                <th class="text-end pe-2">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="v : ${veiculosMap[user.id]}">
+                                                <td class="ps-2"><code th:text="${v.placa}">ABC1D23</code></td>
+                                                <td><small th:text="${v.tipo.getDescricao()}">Fiorino</small></td>
+                                                <td><small
+                                                        th:text="${#numbers.formatDecimal(v.capacidadeCarga, 0, 'DEFAULT', 1, 'DEFAULT')}">100.0</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <small class="badge"
+                                                        th:class="${v.fechado ? 'bg-warning' : 'bg-secondary'}"
+                                                        th:text="${v.fechado ? 'Sim' : 'Não'}">Não</small>
+                                                </td>
+                                                <td class="text-end pe-2">
+                                                    <button type="button" class="btn btn-xs btn-outline-primary"
+                                                        data-bs-toggle="modal"
+                                                        th:data-bs-target="'#editVeiculoModal' + ${v.id}">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <form th:action="@{/admin/usuarios/veiculo/remover}" method="post"
+                                                        style="display:inline;">
+                                                        <input type="hidden" name="id" th:value="${v.id}" />
+                                                        <button type="submit" class="btn btn-xs btn-danger"
+                                                            onclick="return confirm('Tem certeza?')">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Botão para adicionar novo veículo -->
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
                                     th:data-bs-target="'#addVeiculoModal' + ${user.id}">
-                                <i class="bi bi-plus-circle me-1"></i>Adicionar Veículo
-                            </button>
+                                    <i class="bi bi-plus-circle me-1"></i>Adicionar Veículo
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <div>
-                        <p class="text-muted small mb-0"><i>* Alterações em tipos de usuário devem ser feitas no banco
-                            de dados</i></p>
+                    <div class="modal-footer justify-content-between">
+                        <div>
+                            <p class="text-muted small mb-0"><i>* Alterações em tipos de usuário devem ser feitas no
+                                    banco
+                                    de dados</i></p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                    </div>
-                </div>
-            </form>
-            <!-- Formulário separado para ativar/desativar -->
-            <form th:action="@{/admin/usuarios/atualizar-status}" method="post" class="d-inline">
-                <div class="modal-footer" style="border-top: 0; padding-top: 0;">
-                    <input type="hidden" name="id" th:value="${user.id}">
-                    <!-- Botão condicional baseado no statusAprovacao -->
-                    <button type="submit" class="btn btn-success" name="status" value="APROVADO"
+                </form>
+                <!-- Formulário separado para ativar/desativar -->
+                <form th:action="@{/admin/usuarios/atualizar-status}" method="post" class="d-inline">
+                    <div class="modal-footer" style="border-top: 0; padding-top: 0;">
+                        <input type="hidden" name="id" th:value="${user.id}">
+                        <!-- Botão condicional baseado no statusAprovacao -->
+                        <button type="submit" class="btn btn-success" name="status" value="APROVADO"
                             th:if="${user.statusAprovacao != T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
-                        <i class="bi bi-check-circle me-1"></i> Aprovar
-                    </button>
-                    <button type="submit" class="btn btn-danger" name="status" value="REJEITADO"
+                            <i class="bi bi-check-circle me-1"></i> Aprovar
+                        </button>
+                        <button type="submit" class="btn btn-danger" name="status" value="REJEITADO"
                             th:if="${user.statusAprovacao == T(com.projetointegrador.model.StatusAprovacao).APROVADO}">
-                        <i class="bi bi-x-circle me-1"></i> Desativar
-                    </button>
-                </div>
-            </form>
+                            <i class="bi bi-x-circle me-1"></i> Desativar
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Modals para adicionar e editar veículos (FORA do contexto de formulários aninhados) -->
-<div th:each="user : ${usuarios}" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
-    <!-- Modal para editar veículo -->
-    <div th:each="v : ${veiculosMap[user.id]}" class="modal fade" th:id="'editVeiculoModal' + ${v.id}" tabindex="-1"
-         aria-hidden="true">
+    <!-- Modals para adicionar e editar veículos (FORA do contexto de formulários aninhados) -->
+    <div th:each="user : ${usuarios}" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}">
+        <!-- Modal para editar veículo -->
+        <div th:each="v : ${veiculosMap[user.id]}" class="modal fade" th:id="'editVeiculoModal' + ${v.id}" tabindex="-1"
+            aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="bi bi-pencil me-2"></i>Editar Veículo
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" name="id" th:value="${v.id}" />
+                            <input type="hidden" name="prestadorId" th:value="${user.id}" />
+
+                            <div class="mb-3">
+                                <label class="form-label">Placa</label>
+                                <input type="text" name="placa" class="form-control" th:value="${v.placa}" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Tipo</label>
+                                <select name="tipo" class="form-select" required>
+                                    <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}"
+                                        th:value="${t.name()}" th:text="${t.getDescricao()}"
+                                        th:selected="${v.tipo == t}"></option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Capacidade de Carga (kg)</label>
+                                <input type="number" step="0.1" name="capacidade" class="form-control"
+                                    th:value="${v.capacidadeCarga}" />
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="fechado"
+                                    th:id="'editFechado' + ${v.id}" th:checked="${v.fechado}" />
+                                <label class="form-check-label" th:for="'editFechado' + ${v.id}">
+                                    Veículo Fechado
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para adicionar novo veículo -->
+    <div th:each="user : ${usuarios}" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}" class="modal fade"
+        th:id="'addVeiculoModal' + ${user.id}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil me-2"></i>Editar Veículo
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar Novo Veículo
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post">
                     <div class="modal-body">
-                        <input type="hidden" name="id" th:value="${v.id}"/>
-                        <input type="hidden" name="prestadorId" th:value="${user.id}"/>
+                        <input type="hidden" name="prestadorId" th:value="${user.id}" />
 
                         <div class="mb-3">
                             <label class="form-label">Placa</label>
-                            <input type="text" name="placa" class="form-control" th:value="${v.placa}" required/>
+                            <input type="text" name="placa" class="form-control" placeholder="ABC1D23" required />
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Tipo</label>
                             <select name="tipo" class="form-select" required>
+                                <option value="">Selecione um tipo</option>
                                 <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}"
-                                        th:value="${t.name()}" th:text="${t.getDescricao()}"
-                                        th:selected="${v.tipo == t}"></option>
+                                    th:value="${t.name()}" th:text="${t.getDescricao()}"></option>
                             </select>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Capacidade de Carga (kg)</label>
-                            <input type="number" step="0.1" name="capacidade" class="form-control"
-                                   th:value="${v.capacidadeCarga}"/>
+                            <input type="number" step="0.1" name="capacidade" class="form-control" />
                         </div>
 
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="fechado"
-                                   th:id="'editFechado' + ${v.id}" th:checked="${v.fechado}"/>
-                            <label class="form-check-label" th:for="'editFechado' + ${v.id}">
+                                th:id="'addFechado' + ${user.id}" />
+                            <label class="form-check-label" th:for="'addFechado' + ${user.id}">
                                 Veículo Fechado
                             </label>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <button type="submit" class="btn btn-success">Adicionar</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal para adicionar novo veículo -->
-<div th:each="user : ${usuarios}" th:if="${user.tipoUsuario.name() == 'ROLE_PRESTADOR'}" class="modal fade"
-     th:id="'addVeiculoModal' + ${user.id}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-plus-circle me-2"></i>Adicionar Novo Veículo
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form th:action="@{/admin/usuarios/veiculo/salvar}" method="post">
-                <div class="modal-body">
-                    <input type="hidden" name="prestadorId" th:value="${user.id}"/>
+    <!-- Reutiliza seu footer e scripts -->
+    <footer th:replace="~{fragments/navbar :: footer}"></footer>
+    <div th:replace="~{fragments/navbar :: scripts}"></div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Placa</label>
-                        <input type="text" name="placa" class="form-control" placeholder="ABC1D23" required/>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Tipo</label>
-                        <select name="tipo" class="form-select" required>
-                            <option value="">Selecione um tipo</option>
-                            <option th:each="t : ${T(com.projetointegrador.model.TipoVeiculo).values()}"
-                                    th:value="${t.name()}" th:text="${t.getDescricao()}"></option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Capacidade de Carga (kg)</label>
-                        <input type="number" step="0.1" name="capacidade" class="form-control"/>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="fechado"
-                               th:id="'addFechado' + ${user.id}"/>
-                        <label class="form-check-label" th:for="'addFechado' + ${user.id}">
-                            Veículo Fechado
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success">Adicionar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Reutiliza seu footer e scripts -->
-<footer th:replace="~{fragments/navbar :: footer}"></footer>
-<div th:replace="~{fragments/navbar :: scripts}"></div>
-
-<!-- Stylesheet para botões pequenos -->
-<style>
-    .btn-xs {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-    }
-</style>
-
-<!-- Page scripts: formatting for CPF and WhatsApp fields in modals -->
-<script>
-    (function () {
-        function onlyDigits(value) {
-            return value ? value.replace(/\D+/g, '') : '';
+    <!-- Stylesheet para botões pequenos -->
+    <style>
+        .btn-xs {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
         }
+    </style>
 
-        function formatCPF(value) {
-            var v = onlyDigits(value).slice(0, 11);
-            if (!v) return '';
-            if (v.length <= 3) return v;
-            if (v.length <= 6) return v.slice(0, 3) + '.' + v.slice(3);
-            if (v.length <= 9) return v.slice(0, 3) + '.' + v.slice(3, 6) + '.' + v.slice(6);
-            return v.slice(0, 3) + '.' + v.slice(3, 6) + '.' + v.slice(6, 9) + '-' + v.slice(9);
-        }
-
-        function formatWhatsapp(value) {
-            var v = onlyDigits(value);
-            // Remove leading country code if present (e.g., 55)
-            if (v.length > 11 && v.startsWith('55')) {
-                v = v.slice(2);
+    <!-- Page scripts: formatting for CPF and WhatsApp fields in modals -->
+    <script>
+        (function () {
+            function onlyDigits(value) {
+                return value ? value.replace(/\D+/g, '') : '';
             }
-            v = v.slice(0, 11);
-            if (!v) return '';
-            if (v.length <= 2) return '(' + v;
-            if (v.length <= 6) return '(' + v.slice(0, 2) + ') ' + v.slice(2);
-            if (v.length <= 10) return '(' + v.slice(0, 2) + ') ' + v.slice(2, 6) + '-' + v.slice(6);
-            return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
-        }
 
-        function attachFormatting() {
-            document.querySelectorAll('.cpf-field').forEach(function (el) {
-                // initialize value
-                el.value = formatCPF(el.value);
-                el.addEventListener('input', function () {
+            function formatCPF(value) {
+                var v = onlyDigits(value).slice(0, 11);
+                if (!v) return '';
+                if (v.length <= 3) return v;
+                if (v.length <= 6) return v.slice(0, 3) + '.' + v.slice(3);
+                if (v.length <= 9) return v.slice(0, 3) + '.' + v.slice(3, 6) + '.' + v.slice(6);
+                return v.slice(0, 3) + '.' + v.slice(3, 6) + '.' + v.slice(6, 9) + '-' + v.slice(9);
+            }
+
+            function formatWhatsapp(value) {
+                var v = onlyDigits(value);
+                // Remove leading country code if present (e.g., 55)
+                if (v.length > 11 && v.startsWith('55')) {
+                    v = v.slice(2);
+                }
+                v = v.slice(0, 11);
+                if (!v) return '';
+                if (v.length <= 2) return '(' + v;
+                if (v.length <= 6) return '(' + v.slice(0, 2) + ') ' + v.slice(2);
+                if (v.length <= 10) return '(' + v.slice(0, 2) + ') ' + v.slice(2, 6) + '-' + v.slice(6);
+                return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
+            }
+
+            function attachFormatting() {
+                document.querySelectorAll('.cpf-field').forEach(function (el) {
+                    // initialize value
                     el.value = formatCPF(el.value);
-                    // best-effort: place cursor at end
-                    el.selectionStart = el.selectionEnd = el.value.length;
+                    el.addEventListener('input', function () {
+                        el.value = formatCPF(el.value);
+                        // best-effort: place cursor at end
+                        el.selectionStart = el.selectionEnd = el.value.length;
+                    });
                 });
-            });
 
-            document.querySelectorAll('.whatsapp-field').forEach(function (el) {
-                el.value = formatWhatsapp(el.value);
-                el.addEventListener('input', function () {
+                document.querySelectorAll('.whatsapp-field').forEach(function (el) {
                     el.value = formatWhatsapp(el.value);
-                    el.selectionStart = el.selectionEnd = el.value.length;
+                    el.addEventListener('input', function () {
+                        el.value = formatWhatsapp(el.value);
+                        el.selectionStart = el.selectionEnd = el.value.length;
+                    });
                 });
-            });
-        }
-
-        // Attach when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', attachFormatting);
-        } else {
-            attachFormatting();
-        }
-
-        // Also re-attach when any modal is shown (dynamic content)
-        document.addEventListener('shown.bs.modal', function () {
-            attachFormatting();
-        });
-
-        // Remove non-digit characters before submitting the edit user form
-        window.cleanUserFields = function (form) {
-            try {
-                var cpf = form.querySelector('.cpf-field');
-                var whatsapp = form.querySelector('.whatsapp-field');
-                if (cpf && cpf.value) {
-                    cpf.value = cpf.value.replace(/\D+/g, '');
-                }
-                if (whatsapp && whatsapp.value) {
-                    whatsapp.value = whatsapp.value.replace(/\D+/g, '');
-                }
-            } catch (e) {
-                // fail silently — let the form submit
             }
-            return true;
-        };
-    })();
-</script>
+
+            // Attach when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', attachFormatting);
+            } else {
+                attachFormatting();
+            }
+
+            // Also re-attach when any modal is shown (dynamic content)
+            document.addEventListener('shown.bs.modal', function () {
+                attachFormatting();
+            });
+
+            // Remove non-digit characters before submitting the edit user form
+            window.cleanUserFields = function (form) {
+                try {
+                    var cpf = form.querySelector('.cpf-field');
+                    var whatsapp = form.querySelector('.whatsapp-field');
+                    if (cpf && cpf.value) {
+                        cpf.value = cpf.value.replace(/\D+/g, '');
+                    }
+                    if (whatsapp && whatsapp.value) {
+                        whatsapp.value = whatsapp.value.replace(/\D+/g, '');
+                    }
+                } catch (e) {
+                    // fail silently — let the form submit
+                }
+                return true;
+            };
+        })();
+    </script>
 </body>
+
 </html>
