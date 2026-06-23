@@ -20,6 +20,8 @@ Repositório para desenvolvimento da aplicação do Projeto Integrador com exten
 
 ## Iniciar os containers da aplicação e do banco
 
+Certifique-se de que as portas 8080 e 5433 não estejam em uso, senão o docker não iniciará os containers. Após confirmar que as portas estão livres, execute o comando abaixo para subir os containers:
+
 ```bash
 docker compose up -d --build
 ```
