@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ResponseEntity;
 
 import com.projetointegrador.model.Solicitacao;
 import com.projetointegrador.model.StatusAprovacao;
@@ -252,15 +253,16 @@ public class AdminController {
     }
 
     @PostMapping("/usuarios/editar")
-    public String editarUsuario(@RequestParam("id") Long id, @RequestParam("nomeCompleto") String nomeCompleto,
+    @ResponseBody
+    public ResponseEntity<?> editarUsuario(@RequestParam("id") Long id, @RequestParam("nomeCompleto") String nomeCompleto,
             @RequestParam("email") String email, @RequestParam("whatsapp") String whatsapp,
             @RequestParam("cpf") String cpf,
-            @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao,
-            RedirectAttributes redirectAttributes) {
+            @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao) {
+
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
         if (!usuarioOpt.isPresent()) {
-            redirectAttributes.addFlashAttribute("erro", "Usuário não encontrado.");
-            return "redirect:/admin/usuarios";
+            return ResponseEntity.badRequest().body(
+                    java.util.Map.of("sucesso", false, "mensagem", "Usuário não encontrado."));
         }
 
         try {
@@ -270,10 +272,8 @@ public class AdminController {
             usuario.setWhatsapp(whatsapp);
             usuario.setCpf(cpf);
 
-            // Sempre salva os campos básicos
             usuarioService.salvar(usuario);
 
-            // Atualiza status se informado
             if (statusAprovacao != null && !statusAprovacao.isBlank()) {
                 try {
                     StatusAprovacao status = StatusAprovacao.valueOf(statusAprovacao);
@@ -287,17 +287,27 @@ public class AdminController {
                 }
             }
 
-            redirectAttributes.addFlashAttribute("sucesso", "Dados do usuário atualizados com sucesso!");
+            return ResponseEntity.ok(
+                    java.util.Map.of("sucesso", true, "mensagem", "Dados do usuário atualizados com sucesso!"));
         } catch (RuntimeException e) {
             String msg = e.getMessage() != null ? e.getMessage() : "Erro ao atualizar usuário.";
+            String campoErro = null;
             if (msg.toLowerCase().contains("email")) {
                 msg = "Este e-mail já está em uso por outro usuário.";
+                campoErro = "email";
             } else if (msg.toLowerCase().contains("cpf")) {
                 msg = "Este CPF já está em uso por outro usuário.";
+                campoErro = "cpf";
             }
-            redirectAttributes.addFlashAttribute("erro", msg);
+
+            var response = new java.util.HashMap<String, Object>();
+            response.put("sucesso", false);
+            response.put("mensagem", msg);
+            if (campoErro != null) {
+                response.put("campoErro", campoErro);
+            }
+            return ResponseEntity.badRequest().body(response);
         }
-        return "redirect:/admin/usuarios";
     }
 
     @PostMapping("/usuarios/atualizar-status")

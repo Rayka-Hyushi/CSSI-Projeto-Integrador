@@ -3,8 +3,13 @@ package com.projetointegrador.service;
 import com.projetointegrador.exceptions.SizeExceededException;
 import com.projetointegrador.model.TipoUsuario;
 import com.projetointegrador.model.Usuario;
+import com.projetointegrador.repository.ClienteRepository;
+import com.projetointegrador.repository.PrestadorRepository;
+import com.projetointegrador.repository.RecomendacaoRepository;
 import com.projetointegrador.repository.SolicitacaoRepository;
 import com.projetointegrador.repository.UsuarioRepository;
+import com.projetointegrador.repository.VeiculoRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,19 +23,25 @@ import java.util.Optional;
 public class UsuarioService {
 
 	@Autowired
-	private UsuarioRepository usuarioRepository;
-
-	@Autowired
-	private ClienteService clienteService;
-
-	@Autowired
-	private PrestadorService prestadorService;
-
-	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@Autowired
+	private UsuarioRepository usuarioRepository;
+
+	@Autowired
+	private ClienteRepository clienteRepository;
+
+	@Autowired
+	private PrestadorRepository prestadorRepository;
+
+	@Autowired
 	private SolicitacaoRepository solicitacaoRepository;
+
+	@Autowired
+	private RecomendacaoRepository recomendacaoRepository;
+
+	@Autowired
+	private VeiculoRepository veiculoRepository;
 
 	public List<Usuario> listarTodos() {
 		return usuarioRepository.findAll();
@@ -133,13 +144,20 @@ public class UsuarioService {
 			throw new RuntimeException("Administradores não podem ser deletados.");
 		}
 
-		// Remove todas as solicitações vinculadas ao usuário (FK constraint)
+		// Remove todas as referencias vinculadas ao usuário (FK constraint)
 		solicitacaoRepository.deleteByUsuarioId(id);
 
 		if (usuario.getTipoUsuario().equals(TipoUsuario.ROLE_CLIENTE)) {
-			clienteService.deletar(id);
+			recomendacaoRepository.deleteByClienteId(id);
+			usuarioRepository.deleteFavoritosByClienteId(id);
+			clienteRepository.deleteById(id);
 		} else {
-			prestadorService.deletar(id);
+			recomendacaoRepository.deleteByPrestadorId(id);
+			veiculoRepository.deleteByPrestadorId(id);
+			usuarioRepository.deleteFavoritosByPrestadorId(id);
+			usuarioRepository.deletePrestadorServicoByPrestadorId(id);
+			usuarioRepository.deletePrestadorBairrosByPrestadorId(id);
+			prestadorRepository.deleteById(id);
 		}
 		usuarioRepository.deleteById(id);
 	}
@@ -161,18 +179,22 @@ public class UsuarioService {
 	}
 
 	private static String cpfDigitos(String cpf) {
-		if (cpf == null) return "";
+		if (cpf == null)
+			return "";
 		return cpf.replaceAll("\\D+", "");
 	}
 
 	private static String formatarCpf(String cpf) {
 		String digitos = cpfDigitos(cpf);
-		if (digitos.length() != 11) return digitos;
-		return digitos.substring(0, 3) + "." + digitos.substring(3, 6) + "." + digitos.substring(6, 9) + "-" + digitos.substring(9);
+		if (digitos.length() != 11)
+			return digitos;
+		return digitos.substring(0, 3) + "." + digitos.substring(3, 6) + "." + digitos.substring(6, 9) + "-"
+				+ digitos.substring(9);
 	}
 
 	private static String formatarWhatsapp(String whatsapp) {
-		if (whatsapp == null) return "";
+		if (whatsapp == null)
+			return "";
 		String digitos = whatsapp.replaceAll("\\D+", "");
 		if (digitos.length() > 11 && digitos.startsWith("55")) {
 			digitos = digitos.substring(2);

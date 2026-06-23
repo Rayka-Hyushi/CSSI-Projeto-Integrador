@@ -39,6 +39,7 @@
             </div>
 
             <div th:if="${sucesso}" class="alert alert-success mt-2 mb-4" th:text="${sucesso}"></div>
+            <div th:if="${erro}" class="alert alert-danger mt-2 mb-4" th:text="${erro}"></div>
 
             <!-- Tabela de Usuários -->
             <div class="card border-0 shadow-sm">
@@ -112,9 +113,11 @@
                     <h5 class="modal-title">Editar Dados do Usuário</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form th:action="@{/admin/usuarios/editar}" method="post" th:id="'formEditar' + ${user.id}">
+                <form th:action="@{/admin/usuarios/editar}" method="post" th:id="'formEditar' + ${user.id}"
+                    autocomplete="off">
                     <div class="modal-body">
-                        <div th:id="'erroValidacao' + ${user.id}" class="alert alert-danger d-none" role="alert"></div>
+                        <div th:id="'erroValidacao' + ${user.id}"
+                            class="alert alert-danger alert-dismissible d-none" role="alert"></div>
                         <div class="row g-3">
                             <!-- Foto do Perfil (se existir) -->
                             <div class="col-12 text-center mb-3" th:if="${user.profilePhotoUrl}">
@@ -221,14 +224,11 @@
                                                         th:data-bs-target="'#editVeiculoModal' + ${v.id}">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <form th:action="@{/admin/usuarios/veiculo/remover}" method="post"
-                                                        style="display:inline;">
-                                                        <input type="hidden" name="id" th:value="${v.id}" />
-                                                        <button type="submit" class="btn btn-xs btn-danger"
-                                                            onclick="return confirm('Tem certeza?')">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" class="btn btn-xs btn-danger"
+                                                        th:attr="data-url=@{/admin/usuarios/veiculo/remover}, data-vehicle-id=${v.id}"
+                                                        onclick="removerVeiculo(this)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -449,7 +449,6 @@
                 attachFormatting();
             }
 
-            // Also re-attach when any modal is shown (dynamic content)
             document.addEventListener('shown.bs.modal', function () {
                 attachFormatting();
             });
@@ -457,37 +456,112 @@
     </script>
 
     <script>
-        document.querySelectorAll('[id^="formEditar"]').forEach(function(form) {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                var formEl = e.target;
-                var userId = formEl.id.replace('formEditar', '');
-                var erroDiv = document.getElementById('erroValidacao' + userId);
-                var email = formEl.querySelector('input[name="email"]').value.trim();
-                var cpf = formEl.querySelector('input[name="cpf"]').value.trim();
-                var id = formEl.querySelector('input[name="id"]').value;
+        function removerVeiculo(btn) {
+            if (!confirm('Tem certeza?')) return;
+            var url = btn.getAttribute('data-url');
+            var vehicleId = btn.getAttribute('data-vehicle-id');
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'id';
+            input.value = vehicleId;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
 
-                erroDiv.classList.add('d-none');
-                erroDiv.innerHTML = '';
+        function initEditForms() {
+            document.querySelectorAll('form[id^="formEditar"]').forEach(function (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var formEl = e.target;
+                    var erroDiv = formEl.querySelector('[id^="erroValidacao"]');
 
-                fetch('/admin/usuarios/verificar?email=' + encodeURIComponent(email) + '&cpf=' + encodeURIComponent(cpf) + '&id=' + id)
-                    .then(function(r) { return r.json(); })
-                    .then(function(dados) {
-                        var erros = [];
-                        if (dados.emailExiste) erros.push('Este e-mail já está em uso por outro usuário.');
-                        if (dados.cpfExiste) erros.push('Este CPF já está em uso por outro usuário.');
-                        if (erros.length > 0) {
-                            erroDiv.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>' + erros.join('<br>') + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
-                            erroDiv.classList.remove('d-none');
-                            erroDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        } else {
-                            formEl.submit();
+                    if (erroDiv) {
+                        erroDiv.classList.add('d-none');
+                        erroDiv.innerHTML = '';
+                    }
+                    formEl.querySelectorAll('.is-invalid').forEach(function (el) {
+                        el.classList.remove('is-invalid');
+                    });
+
+                    var formData = new FormData(formEl);
+
+                    fetch(formEl.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
                         }
                     })
-                    .catch(function() {
-                        formEl.submit();
-                    });
+                        .then(function (response) {
+                            var contentType = response.headers.get('content-type') || '';
+                            if (contentType.indexOf('application/json') === -1) {
+                                formEl.submit();
+                                return null;
+                            }
+                            return response.json().then(function (data) {
+                                return { ok: response.ok, data: data };
+                            });
+                        })
+                        .then(function (result) {
+                            if (!result) return;
+                            if (result.ok) {
+                                var modalEl = formEl.closest('.modal');
+                                var modal = bootstrap.Modal.getInstance(modalEl);
+                                if (modal) modal.hide();
+                                location.reload();
+                            } else {
+                                if (erroDiv && result.data && result.data.mensagem) {
+                                    erroDiv.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>' + result.data.mensagem +
+                                        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                                    erroDiv.classList.remove('d-none');
+                                    var modalBody = formEl.querySelector('.modal-body');
+                                    if (modalBody) {
+                                        modalBody.scrollTop = 0;
+                                    }
+                                }
+                                if (result.data && result.data.campoErro) {
+                                    var field = formEl.querySelector('[name="' + result.data.campoErro + '"]');
+                                    if (field) {
+                                        field.classList.add('is-invalid');
+                                        field.focus();
+                                    }
+                                }
+                            }
+                        })
+                        .catch(function (err) {
+                            console.error('Erro no fetch, submetendo formulário diretamente:', err);
+                            formEl.submit();
+                        });
+                });
             });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initEditForms);
+        } else {
+            initEditForms();
+        }
+
+        document.addEventListener('hidden.bs.modal', function (e) {
+            if (document.activeElement && e.target.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+            var editForm = e.target.querySelector('form[id^="formEditar"]');
+            if (editForm) {
+                editForm.reset();
+                var erroDiv = editForm.querySelector('[id^="erroValidacao"]');
+                if (erroDiv) {
+                    erroDiv.classList.add('d-none');
+                    erroDiv.innerHTML = '';
+                }
+                editForm.querySelectorAll('.is-invalid').forEach(function(el) {
+                    el.classList.remove('is-invalid');
+                });
+            }
         });
     </script>
 </body>
