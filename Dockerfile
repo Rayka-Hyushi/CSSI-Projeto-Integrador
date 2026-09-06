@@ -31,4 +31,4 @@ ENV SPRING_DATASOURCE_PASSWORD=1234
 EXPOSE 8080
 
 # Comando para iniciar a aplicação Java ao iniciar o container
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx384m", "-Xms256m", "-Dserver.port=${PORT:8080}", "-jar", "app.jar"]
