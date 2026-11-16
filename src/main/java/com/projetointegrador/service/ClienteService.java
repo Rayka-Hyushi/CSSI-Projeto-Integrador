@@ -34,6 +34,7 @@ public class ClienteService {
     public Cliente salvar(Cliente cliente) {
         cliente.setCpf(formatarCpf(cliente.getCpf()));
         cliente.setWhatsapp(formatarWhatsapp(cliente.getWhatsapp()));
+        cliente.setCnpj(UsuarioService.formatarCnpj(cliente.getCnpj()));
 
         if (cliente.getSenha() != null && !cliente.getSenha().isEmpty()) {
             String senha = cliente.getSenha();
@@ -61,6 +62,7 @@ public class ClienteService {
             }
             cliente.setWhatsapp(clienteAtualizado.getWhatsapp());
             cliente.setCpf(clienteAtualizado.getCpf());
+            cliente.setCnpj(UsuarioService.formatarCnpj(clienteAtualizado.getCnpj()));
             return clienteRepository.save(cliente);
         }).orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
     }

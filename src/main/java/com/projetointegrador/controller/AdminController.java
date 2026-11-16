@@ -257,6 +257,7 @@ public class AdminController {
     public ResponseEntity<?> editarUsuario(@RequestParam("id") Long id, @RequestParam("nomeCompleto") String nomeCompleto,
             @RequestParam("email") String email, @RequestParam("whatsapp") String whatsapp,
             @RequestParam("cpf") String cpf,
+            @RequestParam(value = "cnpj", required = false) String cnpj,
             @RequestParam(value = "statusAprovacao", required = false) String statusAprovacao) {
 
         Optional<Usuario> usuarioOpt = usuarioService.buscarPorId(id);
@@ -271,6 +272,7 @@ public class AdminController {
             usuario.setEmail(email);
             usuario.setWhatsapp(whatsapp);
             usuario.setCpf(cpf);
+            usuario.setCnpj(cnpj);
 
             usuarioService.salvar(usuario);
 
@@ -298,6 +300,9 @@ public class AdminController {
             } else if (msg.toLowerCase().contains("cpf")) {
                 msg = "Este CPF já está em uso por outro usuário.";
                 campoErro = "cpf";
+            } else if (msg.toLowerCase().contains("cnpj")) {
+                msg = "Este CNPJ já está em uso por outro usuário.";
+                campoErro = "cnpj";
             }
 
             var response = new java.util.HashMap<String, Object>();

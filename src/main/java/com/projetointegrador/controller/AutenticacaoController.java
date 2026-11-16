@@ -88,6 +88,7 @@ public class AutenticacaoController {
             @RequestParam("email") String email,
             @RequestParam("whatsapp") String whatsapp,
             @RequestParam("cpf") String cpf,
+            @RequestParam(value = "cnpj", required = false) String cnpj,
             @RequestParam("senha") String senha,
             @RequestParam("tipoUsuario") String tipoUsuarioStr,
 
@@ -112,6 +113,14 @@ public class AutenticacaoController {
             }
             if (usuarioService.existePorCpf(cpf)) {
                 throw new IllegalArgumentException("Este CPF já está cadastrado em nosso sistema.");
+            }
+            if (cnpj != null && !cnpj.isBlank()) {
+                if (!UsuarioService.validarCnpj(cnpj)) {
+                    throw new IllegalArgumentException("CNPJ inválido! Verifique o número informado.");
+                }
+                if (usuarioService.existePorCnpj(cnpj)) {
+                    throw new IllegalArgumentException("Este CNPJ já está cadastrado em nosso sistema.");
+                }
             }
 
             // Validação prévia de placa duplicada ANTES de persistir qualquer entidade
@@ -142,6 +151,7 @@ public class AutenticacaoController {
                 p.setEmail(email);
                 p.setWhatsapp(whatsapp);
                 p.setCpf(cpf);
+                p.setCnpj(cnpj);
                 p.setSenha(senha);
                 p.setTipoUsuario(tipoUsuario);
 
@@ -172,6 +182,7 @@ public class AutenticacaoController {
                 c.setEmail(email);
                 c.setWhatsapp(whatsapp);
                 c.setCpf(cpf);
+                c.setCnpj(cnpj);
                 c.setSenha(senha);
                 c.setTipoUsuario(tipoUsuario);
                 clienteService.salvar(c);
@@ -185,6 +196,9 @@ public class AutenticacaoController {
             sol.setStatusSolicitacao(StatusAprovacao.PENDENTE);
 
             String formDetalhes = "Solicita-se cadastro de nova conta. \nTipo de conta: " + tipoUsuario.name();
+            if (cnpj != null && !cnpj.isBlank()) {
+                formDetalhes += "\nCNPJ: " + UsuarioService.formatarCnpj(cnpj);
+            }
             if (isPrestador) {
                 formDetalhes += "\nPlaca: " + placaVeiculo;
                 formDetalhes += "\nTipo de Veículo: " + TipoVeiculo.valueOf(tipoVeiculoStr);
@@ -205,6 +219,7 @@ public class AutenticacaoController {
             model.addAttribute("email", email);
             model.addAttribute("whatsapp", whatsapp);
             model.addAttribute("cpf", cpf);
+            model.addAttribute("cnpj", cnpj);
             model.addAttribute("tipoUsuario", tipoUsuarioStr);
             model.addAttribute("placaVeiculo", placaVeiculo);
             model.addAttribute("tipoVeiculo", tipoVeiculoStr);
@@ -233,6 +248,8 @@ public class AutenticacaoController {
             mensagemErro = "Este endereço de e-mail já está cadastrado em nosso sistema.";
         } else if (originalMsg.contains("duplicate key value_detail: key (cpf)") || originalMsg.contains("(cpf)")) {
             mensagemErro = "Este CPF já está cadastrado em nosso sistema.";
+        } else if (originalMsg.contains("duplicate key value_detail: key (cnpj)") || originalMsg.contains("(cnpj)")) {
+            mensagemErro = "Este CNPJ já está cadastrado em nosso sistema.";
         } else if (originalMsg.contains("placa duplicada")) {
             mensagemErro = "Esta placa já está cadastrada no sistema.";
         } else if (originalMsg.contains("duplicate key value_detail: key (placa)")) {

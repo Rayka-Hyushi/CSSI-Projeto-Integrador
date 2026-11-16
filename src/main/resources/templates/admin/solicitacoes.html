@@ -75,7 +75,7 @@
                             <th>Nome</th>
                             <th>Email</th>
                             <th>WhatsApp</th>
-                            <th>CPF</th>
+                            <th>CPF / CNPJ</th>
                             <th>Tipo</th>
                             <th>Status</th>
                             <th class="text-end">Ações</th>
@@ -97,8 +97,9 @@
                             <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.whatsapp : '-'}">
                                 (00) 0000-0000
                             </td>
-                            <td class="text-muted small" th:text="${sol.usuario != null ? sol.usuario.cpf : '-'}">
-                                000.000.000-00
+                            <td class="text-muted small">
+                                <div th:text="${sol.usuario != null ? sol.usuario.cpf : '-'}">000.000.000-00</div>
+                                <div th:if="${sol.usuario != null and sol.usuario.cnpj != null and !sol.usuario.cnpj.isEmpty()}" class="text-secondary" style="font-size: 0.75rem;" th:text="${sol.usuario.cnpj}">00.000.000/0000-00</div>
                             </td>
                             <td><span class="badge bg-warning text-dark" th:text="${sol.tipoSolicitacao.name()}">CADASTRO</span>
                             </td>
@@ -138,6 +139,7 @@
                 <p><strong>WhatsApp:</strong> <span
                         th:text="${sol.usuario != null ? sol.usuario.whatsapp : '-'}"></span></p>
                 <p><strong>CPF:</strong> <span th:text="${sol.usuario != null ? sol.usuario.cpf : '-'}"></span></p>
+                <p th:if="${sol.usuario != null and sol.usuario.cnpj != null and !sol.usuario.cnpj.isEmpty()}"><strong>CNPJ:</strong> <span th:text="${sol.usuario.cnpj}"></span></p>
                 <div class="mb-3">
                     <label th:for="${'detalhesSolicitacao' + sol.id}" class="fw-bold">Mensagem / Detalhes:</label>
                     <textarea th:id="${'detalhesSolicitacao' + sol.id}" class="form-control" rows="4" readonly

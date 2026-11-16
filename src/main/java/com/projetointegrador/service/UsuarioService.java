@@ -59,6 +59,11 @@ public class UsuarioService {
 		return usuarioRepository.findByCpf(cpf);
 	}
 
+	public Optional<Usuario> buscarPorCnpj(String cnpj) {
+		if (cnpj == null || cnpj.isBlank()) return Optional.empty();
+		return usuarioRepository.findByCnpj(cnpj);
+	}
+
 	public Usuario salvar(Usuario usuario) {
 		// Normaliza CPF para comparação e armazenamento
 		String cpfFormatado = formatarCpf(usuario.getCpf());
@@ -67,6 +72,25 @@ public class UsuarioService {
 		// Normaliza WhatsApp para armazenamento
 		String whatsappFormatado = formatarWhatsapp(usuario.getWhatsapp());
 		usuario.setWhatsapp(whatsappFormatado);
+
+		// Normaliza CNPJ (se informado)
+		if (usuario.getCnpj() != null && !usuario.getCnpj().isBlank()) {
+			String cnpjDigitos = cnpjDigitos(usuario.getCnpj());
+			if (!validarCnpj(usuario.getCnpj())) {
+				throw new IllegalArgumentException("CNPJ inválido! Verifique o número informado.");
+			}
+			usuario.setCnpj(formatarCnpj(usuario.getCnpj()));
+
+			// Validar se CNPJ já está em uso por outro usuário
+			List<Usuario> todosCnpj = usuarioRepository.findAll();
+			for (Usuario u : todosCnpj) {
+				if (!u.getId().equals(usuario.getId()) && cnpjDigitos.equals(cnpjDigitos(u.getCnpj()))) {
+					throw new RuntimeException("CNPJ já em uso por outro usuário");
+				}
+			}
+		} else {
+			usuario.setCnpj(null);
+		}
 
 		// 1. Validar se o e-mail já está em uso por outro usuário
 		Optional<Usuario> usuarioPorEmail = buscarPorEmail(usuario.getEmail());
@@ -166,6 +190,16 @@ public class UsuarioService {
 		return usuarioRepository.existsByCpf(cpf);
 	}
 
+	public boolean existePorCnpj(String cnpj) {
+		if (cnpj == null || cnpj.isBlank())
+			return false;
+		String digitos = cnpjDigitos(cnpj);
+		if (digitos.isEmpty())
+			return false;
+		return usuarioRepository.findAll().stream()
+				.anyMatch(u -> digitos.equals(cnpjDigitos(u.getCnpj())));
+	}
+
 	public boolean existePorEmail(String email) {
 		return usuarioRepository.existsByEmail(email);
 	}
@@ -206,5 +240,51 @@ public class UsuarioService {
 			return "(" + digitos.substring(0, 2) + ") " + digitos.substring(2, 6) + "-" + digitos.substring(6);
 		}
 		return digitos;
+	}
+
+	public static String cnpjDigitos(String cnpj) {
+		if (cnpj == null)
+			return "";
+		return cnpj.replaceAll("\\D+", "");
+	}
+
+	public static String formatarCnpj(String cnpj) {
+		String digitos = cnpjDigitos(cnpj);
+		if (digitos.isBlank())
+			return null;
+		if (digitos.length() != 14)
+			return digitos;
+		return digitos.substring(0, 2) + "." + digitos.substring(2, 5) + "." + digitos.substring(5, 8) + "/"
+				+ digitos.substring(8, 12) + "-" + digitos.substring(12, 14);
+	}
+
+	public static boolean validarCnpj(String cnpj) {
+		if (cnpj == null)
+			return false;
+		String digitos = cnpj.replaceAll("\\D+", "");
+		if (digitos.length() != 14)
+			return false;
+		if (digitos.matches("(\\d)\\1{13}"))
+			return false;
+
+		int[] peso1 = {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
+		int[] peso2 = {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
+
+		int soma = 0;
+		for (int i = 0; i < 12; i++) {
+			soma += Character.getNumericValue(digitos.charAt(i)) * peso1[i];
+		}
+		int resto = soma % 11;
+		int dv1 = resto < 2 ? 0 : 11 - resto;
+		if (dv1 != Character.getNumericValue(digitos.charAt(12)))
+			return false;
+
+		soma = 0;
+		for (int i = 0; i < 13; i++) {
+			soma += Character.getNumericValue(digitos.charAt(i)) * peso2[i];
+		}
+		resto = soma % 11;
+		int dv2 = resto < 2 ? 0 : 11 - resto;
+		return dv2 == Character.getNumericValue(digitos.charAt(13));
 	}
 }

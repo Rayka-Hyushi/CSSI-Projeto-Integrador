@@ -54,7 +54,7 @@
                                     <th>Nome</th>
                                     <th>Email</th>
                                     <th>WhatsApp</th>
-                                    <th>CPF</th>
+                                    <th>CPF / CNPJ</th>
                                     <th>Tipo</th>
                                     <th>Status</th>
                                     <th class="text-end">Ações</th>
@@ -70,7 +70,10 @@
                                     <td><strong th:text="${user.nomeCompleto}">Nome</strong></td>
                                     <td class="text-muted small" th:text="${user.email}">email@teste.com</td>
                                     <td class="text-muted small" th:text="${user.whatsapp}">(00) 0000-0000</td>
-                                    <td class="text-muted small" th:text="${user.cpf}">000.000.000-00</td>
+                                    <td class="text-muted small">
+                                        <div th:text="${user.cpf}">000.000.000-00</div>
+                                        <div th:if="${user.cnpj != null and !user.cnpj.isEmpty()}" class="text-secondary" style="font-size: 0.75rem;" th:text="${user.cnpj}">00.000.000/0000-00</div>
+                                    </td>
                                     <td><span class="badge bg-info" th:text="${user.tipoUsuario.name()}">CLIENTE</span>
                                     </td>
                                     <td>
@@ -153,6 +156,11 @@
                                     <label for="cpf" class="form-label"><strong>CPF</strong></label>
                                     <input type="text" class="form-control cpf-field" id="cpf" name="cpf"
                                         th:value="${user.cpf}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cnpj" class="form-label"><strong>CNPJ</strong> <small class="text-muted fw-normal">(Opcional)</small></label>
+                                    <input type="text" class="form-control cnpj-field" id="cnpj" name="cnpj"
+                                        th:value="${user.cnpj}" placeholder="00.000.000/0000-00">
                                 </div>
                                 <div class="mb-3">
                                     <label for="tipoUsuario" class="form-label"><strong>Tipo de Usuário</strong></label>
@@ -422,6 +430,16 @@
                 return '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
             }
 
+            function formatCNPJ(value) {
+                var v = onlyDigits(value).slice(0, 14);
+                if (!v) return '';
+                if (v.length <= 2) return v;
+                if (v.length <= 5) return v.slice(0, 2) + '.' + v.slice(2);
+                if (v.length <= 8) return v.slice(0, 2) + '.' + v.slice(2, 5) + '.' + v.slice(5);
+                if (v.length <= 12) return v.slice(0, 2) + '.' + v.slice(2, 5) + '.' + v.slice(5, 8) + '/' + v.slice(8);
+                return v.slice(0, 2) + '.' + v.slice(2, 5) + '.' + v.slice(5, 8) + '/' + v.slice(8, 12) + '-' + v.slice(12);
+            }
+
             function attachFormatting() {
                 document.querySelectorAll('.cpf-field').forEach(function (el) {
                     // initialize value
@@ -429,6 +447,14 @@
                     el.addEventListener('input', function () {
                         el.value = formatCPF(el.value);
                         // best-effort: place cursor at end
+                        el.selectionStart = el.selectionEnd = el.value.length;
+                    });
+                });
+
+                document.querySelectorAll('.cnpj-field').forEach(function (el) {
+                    el.value = formatCNPJ(el.value);
+                    el.addEventListener('input', function () {
+                        el.value = formatCNPJ(el.value);
                         el.selectionStart = el.selectionEnd = el.value.length;
                     });
                 });

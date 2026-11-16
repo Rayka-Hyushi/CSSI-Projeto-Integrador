@@ -41,6 +41,9 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;
 
+    @Column(name = "cnpj", length = 18)
+    private String cnpj;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoUsuario tipoUsuario;
@@ -103,6 +106,14 @@ public class Usuario {
 
     public void setCpf(String cpf) {
         this.cpf = cpf;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public void setCnpj(String cnpj) {
+        this.cnpj = cnpj;
     }
 
     public TipoUsuario getTipoUsuario() {

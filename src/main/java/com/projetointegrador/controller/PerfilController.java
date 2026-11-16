@@ -136,6 +136,7 @@ public class PerfilController {
             @RequestParam("email") String email,
             @RequestParam("whatsapp") String whatsapp,
             @RequestParam(value = "cpf", required = false) String cpf,
+            @RequestParam(value = "cnpj", required = false) String cnpj,
             @RequestParam(value = "senha", required = false) String novaSenha,
             Authentication authentication,
             RedirectAttributes redirectAttributes) {
@@ -154,6 +155,8 @@ public class PerfilController {
                     if (cpf != null && !cpf.isBlank()) {
                         u.setCpf(cpf);
                     }
+
+                    u.setCnpj(cnpj);
 
                     if (novaSenha != null && !novaSenha.isBlank()) {
                         u.setSenha(novaSenha); // Service vai encriptar

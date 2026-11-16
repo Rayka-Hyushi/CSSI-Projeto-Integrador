@@ -149,7 +149,8 @@
                     <h2 class="h5 fw-bold mb-1">Prestadores disponíveis</h2>
                     <p class="text-muted mb-0">Resultado da busca com contato direto, sem solicitação salva.</p>
                 </div>
-                <span class="badge text-bg-primary px-3 py-2"
+                <span class="badge px-3 py-2"
+                      th:classappend="${totalPrestadores == 0 and buscaRealizada ? 'text-bg-warning' : 'text-bg-primary'}"
                       th:text="|${totalPrestadores} prestador(es) encontrado(s)|">0 prestador(es) encontrado(s)</span>
             </div>
 
@@ -235,10 +236,33 @@
                     </div>
                 </div>
 
-                <div th:unless="${prestadores != null and !#lists.isEmpty(prestadores)}" class="text-center py-5">
-                    <i class="bi bi-search fs-1 text-muted"></i>
-                    <h3 class="h5 fw-bold mt-3">Nenhum prestador encontrado</h3>
-                    <p class="text-muted mb-0">Tente remover alguns filtros ou escolher outros bairros e serviços.</p>
+                <div th:unless="${prestadores != null and !#lists.isEmpty(prestadores)}" class="text-center py-5 px-3">
+                    <div class="mb-3">
+                        <i class="bi bi-funnel fs-1 text-primary opacity-50"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mt-2 text-dark">Nenhum resultado encontrado</h3>
+                    <p class="text-muted mx-auto mb-3" style="max-width: 620px;" th:if="${buscaRealizada}">
+                        Não encontramos prestadores que atendam a todos os filtros selecionados no momento.
+                        Para localizar prestadores disponíveis, <strong>refine os filtros de sua busca</strong>:
+                    </p>
+                    <p class="text-muted mx-auto mb-3" style="max-width: 620px;" th:unless="${buscaRealizada}">
+                        Não há prestadores cadastrados e aprovados disponíveis no momento.
+                    </p>
+
+                    <div th:if="${buscaRealizada}" class="card bg-light border-0 mx-auto text-start p-3 mb-4 shadow-sm" style="max-width: 580px;">
+                        <h6 class="fw-bold mb-2 text-primary"><i class="bi bi-lightbulb me-2"></i>Sugestões para refinar sua busca:</h6>
+                        <ul class="list-unstyled mb-0 small text-secondary">
+                            <li class="mb-2"><i class="bi bi-check2 text-primary me-2"></i><strong>Origem ou Destino:</strong> Se você selecionou ambos os bairros, tente preencher apenas o de origem ou apenas o de destino para ampliar o alcance.</li>
+                            <li class="mb-2"><i class="bi bi-check2 text-primary me-2"></i><strong>Tamanho do frete:</strong> Experimente selecionar uma categoria de veículo maior ou deixar sem restrição de tamanho.</li>
+                            <li class="mb-0"><i class="bi bi-check2 text-primary me-2"></i><strong>Serviços adicionais:</strong> Desmarque alguns serviços adicionais específicos que possam estar restringindo a busca aos prestadores que realizam todos eles.</li>
+                        </ul>
+                    </div>
+
+                    <div th:if="${buscaRealizada}" class="d-flex justify-content-center gap-2">
+                        <a th:href="@{/cliente/inicio}" class="btn btn-outline-primary">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar filtros e ver todos os prestadores
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

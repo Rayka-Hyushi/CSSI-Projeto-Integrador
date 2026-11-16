@@ -38,6 +38,7 @@ public class PrestadorService {
     public Prestador salvar(Prestador prestador) {
         prestador.setCpf(formatarCpf(prestador.getCpf()));
         prestador.setWhatsapp(formatarWhatsapp(prestador.getWhatsapp()));
+        prestador.setCnpj(UsuarioService.formatarCnpj(prestador.getCnpj()));
 
         if (prestador.getSenha() != null && !prestador.getSenha().isEmpty()) {
             String senha = prestador.getSenha();
@@ -62,6 +63,7 @@ public class PrestadorService {
             }
             prestador.setWhatsapp(prestadorAtualizado.getWhatsapp());
             prestador.setCpf(prestadorAtualizado.getCpf());
+            prestador.setCnpj(UsuarioService.formatarCnpj(prestadorAtualizado.getCnpj()));
             prestador.setStatusAprovacao(prestadorAtualizado.getStatusAprovacao());
             return prestadorRepository.save(prestador);
         }).orElseThrow(() -> new RuntimeException("Prestador não encontrado"));
