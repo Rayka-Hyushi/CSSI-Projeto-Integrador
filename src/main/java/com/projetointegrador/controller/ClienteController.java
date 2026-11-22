@@ -1,10 +1,13 @@
 package com.projetointegrador.controller;
 
 import org.springframework.transaction.annotation.Transactional;
+import com.projetointegrador.model.Bairro;
 import com.projetointegrador.model.Cliente;
 import com.projetointegrador.model.Prestador;
+import com.projetointegrador.model.ServicoAdicional;
 import com.projetointegrador.model.StatusAprovacao;
 import com.projetointegrador.model.TipoVeiculo;
+import com.projetointegrador.model.Veiculo;
 import com.projetointegrador.service.BairroService;
 import com.projetointegrador.service.ClienteService;
 import com.projetointegrador.service.ServicoAdicionalService;
@@ -16,7 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Controller
@@ -101,6 +106,39 @@ public class ClienteController {
             }
         }
         return "cliente/favoritos";
+    }
+
+    @GetMapping("/prestador/{prestadorId}")
+    @Transactional(readOnly = true)
+    public String verPerfilPrestador(
+            @PathVariable Long prestadorId,
+            @RequestParam(value = "origem", required = false) String origem,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Optional<Prestador> prestadorOpt = prestadorService.buscarPorId(prestadorId);
+
+        if (prestadorOpt.isEmpty() || prestadorOpt.get().getStatusAprovacao() != StatusAprovacao.APROVADO) {
+            redirectAttributes.addFlashAttribute("erro", "Prestador não encontrado ou indisponível.");
+            return "redirect:/cliente/inicio";
+        }
+
+        Prestador prestador = prestadorOpt.get();
+        model.addAttribute("prestador", new PerfilPrestadorPublico(prestador));
+        model.addAttribute("origem", origem);
+
+        boolean favorito = false;
+        if (authentication != null && authentication.isAuthenticated()) {
+            Optional<Cliente> clienteOpt = clienteService.buscarPorEmail(authentication.getName());
+            if (clienteOpt.isPresent() && clienteOpt.get().getPrestadores() != null) {
+                favorito = clienteOpt.get().getPrestadores().stream()
+                        .anyMatch(item -> Objects.equals(item.getId(), prestadorId));
+            }
+        }
+        model.addAttribute("favorito", favorito);
+
+        return "cliente/perfil-prestador";
     }
 
     @PostMapping("/favoritar/{prestadorId}")
@@ -215,6 +253,120 @@ public class ClienteController {
         return prestador.getServicos() != null && servicosIds.stream()
                 .allMatch(servicoId -> prestador.getServicos().stream()
                         .anyMatch(servico -> Objects.equals(servico.getId(), servicoId)));
+    }
+
+    public static class PerfilPrestadorPublico {
+        private final Long id;
+        private final String nomeCompleto;
+        private final String email;
+        private final String whatsapp;
+        private final String profilePhotoUrl;
+        private final boolean statusOnline;
+        private final StatusAprovacao statusAprovacao;
+        private final int recomendacoes;
+        private final LocalDateTime createdAt;
+        private final List<VeiculoPublico> veiculos;
+        private final List<String> bairros;
+        private final List<String> servicos;
+
+        public PerfilPrestadorPublico(Prestador prestador) {
+            this.id = prestador.getId();
+            this.nomeCompleto = prestador.getNomeCompleto();
+            this.email = prestador.getEmail();
+            this.whatsapp = prestador.getWhatsapp();
+            this.profilePhotoUrl = prestador.getProfilePhotoUrl();
+            this.statusOnline = prestador.isStatusOnline();
+            this.statusAprovacao = prestador.getStatusAprovacao();
+            this.recomendacoes = prestador.getRecomendacoes();
+            this.createdAt = prestador.getCreatedAt();
+            this.veiculos = prestador.getVeiculos() == null
+                    ? List.of()
+                    : prestador.getVeiculos().stream().map(VeiculoPublico::new).toList();
+            this.bairros = prestador.getBairros() == null
+                    ? List.of()
+                    : prestador.getBairros().stream().map(Bairro::getNomeBairro).toList();
+            this.servicos = prestador.getServicos() == null
+                    ? List.of()
+                    : prestador.getServicos().stream().map(ServicoAdicional::getNomeServico).toList();
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public String getNomeCompleto() {
+            return nomeCompleto;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getWhatsapp() {
+            return whatsapp;
+        }
+
+        public String getProfilePhotoUrl() {
+            return profilePhotoUrl;
+        }
+
+        public boolean isStatusOnline() {
+            return statusOnline;
+        }
+
+        public StatusAprovacao getStatusAprovacao() {
+            return statusAprovacao;
+        }
+
+        public int getRecomendacoes() {
+            return recomendacoes;
+        }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+
+        public List<VeiculoPublico> getVeiculos() {
+            return veiculos;
+        }
+
+        public List<String> getBairros() {
+            return bairros;
+        }
+
+        public List<String> getServicos() {
+            return servicos;
+        }
+    }
+
+    public static class VeiculoPublico {
+        private final String tipo;
+        private final double capacidadeCarga;
+        private final boolean fechado;
+        private final String placa;
+
+        public VeiculoPublico(Veiculo veiculo) {
+            this.tipo = veiculo.getTipo() != null ? veiculo.getTipo().getDescricao() : "";
+            this.capacidadeCarga = veiculo.getCapacidadeCarga();
+            this.fechado = veiculo.isFechado();
+            this.placa = veiculo.getPlaca();
+        }
+
+        public String getTipo() {
+            return tipo;
+        }
+
+        public double getCapacidadeCarga() {
+            return capacidadeCarga;
+        }
+
+        public boolean isFechado() {
+            return fechado;
+        }
+
+        public String getPlaca() {
+            return placa;
+        }
     }
 
     // Classe auxiliar para respostas AJAX

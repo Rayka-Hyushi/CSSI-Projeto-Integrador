@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/navbar :: head('Perfil do Prestador')}"></head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+<nav th:replace="~{fragments/navbar :: navbar}"></nav>
+
+<main class="flex-grow-1 py-4">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/cliente/inicio}">Início</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${prestador.nomeCompleto}">Prestador</li>
+            </ol>
+        </nav>
+
+        <div class="card border-0 shadow-sm cliente-request-card mb-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <div class="position-relative">
+                        <img class="rounded-circle cliente-avatar" width="96" height="96"
+                             th:src="${prestador.profilePhotoUrl != null and !#strings.isEmpty(prestador.profilePhotoUrl) ? prestador.profilePhotoUrl : 'https://ui-avatars.com/api/?name=' + prestador.nomeCompleto + '&background=random'}"
+                             th:data-fallback="'https://ui-avatars.com/api/?name=' + ${prestador.nomeCompleto} + '&background=random'"
+                             onerror="this.onerror=null; this.src=this.getAttribute('data-fallback');"
+                             alt="Foto do prestador">
+                        <span style="width: 18px; height: 18px; border: 2px solid white;"
+                              th:class="${'position-absolute bottom-0 end-0 rounded-circle ' + (prestador.statusOnline ? 'bg-success' : 'bg-secondary')}"
+                              title="Status online"></span>
+                    </div>
+                    <div>
+                        <h1 class="h3 fw-bold mb-1" th:text="${prestador.nomeCompleto}">Nome do prestador</h1>
+                        <span class="badge rounded-pill"
+                              th:classappend="${prestador.statusOnline ? 'bg-success' : 'bg-secondary'}"
+                              th:text="${prestador.statusOnline ? 'Online' : 'Offline'}"></span>
+                        <span class="badge rounded-pill bg-primary ms-1"
+                              th:text="${prestador.statusAprovacao}">APROVADO</span>
+                        <p class="text-muted small mt-2 mb-0"
+                           th:text="${prestador.createdAt != null ? 'Na plataforma desde ' + #temporals.format(prestador.createdAt, 'dd/MM/yyyy') : ''}"></p>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="button" class="btn btn-success"
+                            th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
+                        <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                    </button>
+                    <button type="button"
+                            th:class="${'btn ' + (favorito ? 'btn-danger' : 'btn-outline-danger')}"
+                            th:attr="data-prestador-id=${prestador.id}"
+                            onclick="alternarFavorito(this)">
+                        <i class="bi me-1" th:classappend="${favorito ? 'bi-heart-fill' : 'bi-heart'}"></i>
+                        <span th:text="${favorito ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}"></span>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning"
+                            th:attr="data-prestador-id=${prestador.id}"
+                            onclick="recomendarPrestador(this)">
+                        <i class="bi bi-hand-thumbs-up me-1"></i>
+                        <span class="count" th:text="${prestador.recomendacoes}">0</span>
+                        <span class="text">Recomendar</span>
+                    </button>
+                    <a class="btn btn-outline-secondary"
+                       th:href="${origem != null and origem == 'favoritos'} ? @{/cliente/favoritos} : @{/cliente/inicio}">
+                        <i class="bi bi-arrow-left me-1"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-light border small" role="alert">
+            <i class="bi bi-shield-lock me-1"></i>
+            Por privacidade, dados sensíveis como CPF e CNPJ não são exibidos neste perfil.
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100 cliente-result-card">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-3"><i class="bi bi-person-badge me-2"></i>Dados do prestador</h2>
+                        <dl class="row mb-0 small">
+                            <dt class="col-5 text-muted">Nome completo</dt>
+                            <dd class="col-7 fw-semibold" th:text="${prestador.nomeCompleto}"></dd>
+                            <dt class="col-5 text-muted">WhatsApp</dt>
+                            <dd class="col-7" th:text="${prestador.whatsapp}"></dd>
+                            <dt class="col-5 text-muted">E-mail</dt>
+                            <dd class="col-7 text-break" th:text="${prestador.email}"></dd>
+                            <dt class="col-5 text-muted">Situação</dt>
+                            <dd class="col-7">Prestador aprovado</dd>
+                            <dt class="col-5 text-muted">Disponibilidade</dt>
+                            <dd class="col-7" th:text="${prestador.statusOnline ? 'Online' : 'Offline'}"></dd>
+                            <dt class="col-5 text-muted">Recomendações</dt>
+                            <dd class="col-7" th:text="${prestador.recomendacoes}"></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4 cliente-result-card">
+                    <div class="card-body p-4">
+                        <h2 class="h5 fw-bold mb-3"><i class="bi bi-truck me-2"></i>Veículos</h2>
+                        <div th:if="${prestador.veiculos != null and !#lists.isEmpty(prestador.veiculos)}" class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Capacidade</th>
+                                    <th>Placa</th>
+                                    <th>Carroceria</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="veiculo : ${prestador.veiculos}">
+                                    <td th:text="${veiculo.tipo}"></td>
+                                    <td th:text="${veiculo.capacidadeCarga + ' kg'}"></td>
+                                    <td th:text="${veiculo.placa}"></td>
+                                    <td th:text="${veiculo.fechado ? 'Fechada' : 'Aberta'}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p th:unless="${prestador.veiculos != null and !#lists.isEmpty(prestador.veiculos)}"
+                           class="text-muted mb-0">Nenhum veículo cadastrado.</p>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 cliente-result-card">
+                            <div class="card-body p-4">
+                                <h2 class="h5 fw-bold mb-3"><i class="bi bi-geo-alt me-2"></i>Bairros atendidos</h2>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge rounded-pill text-bg-light border text-dark"
+                                          th:each="bairro : ${prestador.bairros}"
+                                          th:text="${bairro}"></span>
+                                    <span th:if="${#lists.isEmpty(prestador.bairros)}" class="text-muted small">Nenhum bairro informado.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 cliente-result-card">
+                            <div class="card-body p-4">
+                                <h2 class="h5 fw-bold mb-3"><i class="bi bi-tools me-2"></i>Serviços adicionais</h2>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge rounded-pill text-bg-primary"
+                                          th:each="servico : ${prestador.servicos}"
+                                          th:text="${servico}"></span>
+                                    <span th:if="${#lists.isEmpty(prestador.servicos)}" class="text-muted small">Nenhum serviço adicional informado.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/navbar :: footer}"></footer>
+<div th:replace="~{fragments/navbar :: scripts}"></div>
+
+<script>
+    function abrirWhatsApp(botao) {
+        const numero = (botao.getAttribute('data-whatsapp') || '').replace(/\D/g, '');
+        if (!numero) return;
+        window.open('https://wa.me/' + numero, '_blank', 'noopener');
+    }
+
+    function alternarFavorito(botao) {
+        const prestadorId = botao.getAttribute('data-prestador-id');
+        const icon = botao.querySelector('i');
+        const texto = botao.querySelector('span:last-child');
+
+        botao.disabled = true;
+
+        fetch(`/cliente/favoritar/${prestadorId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                botao.disabled = false;
+                if (data.sucesso) {
+                    if (data.isFavorito) {
+                        botao.classList.remove('btn-outline-danger');
+                        botao.classList.add('btn-danger');
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                    } else {
+                        botao.classList.remove('btn-danger');
+                        botao.classList.add('btn-outline-danger');
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                    }
+                    texto.textContent = data.isFavorito ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
+                    showNotification(data.mensagem, 'success');
+                } else {
+                    showNotification(data.mensagem, 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                botao.disabled = false;
+                showNotification('Erro ao processar favorito', 'danger');
+            });
+    }
+
+    function recomendarPrestador(botao) {
+        const prestadorId = botao.getAttribute('data-prestador-id');
+        const countElement = botao.querySelector('.count');
+        const textElement = botao.querySelector('.text');
+
+        botao.disabled = true;
+        const textoOriginal = textElement.textContent;
+        textElement.textContent = 'Enviando...';
+
+        fetch(`/cliente/recomendar/${prestadorId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    countElement.textContent = data.novasRecomendacoes;
+                    botao.disabled = true;
+                    textElement.textContent = 'Recomendado!';
+                    botao.classList.remove('btn-outline-warning');
+                    botao.classList.add('btn-warning');
+                    showNotification(data.mensagem, 'success');
+                } else {
+                    textElement.textContent = textoOriginal;
+                    botao.disabled = false;
+                    showNotification(data.mensagem, 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                textElement.textContent = textoOriginal;
+                botao.disabled = false;
+                showNotification('Erro ao tentar recomendar', 'danger');
+            });
+    }
+
+    function showNotification(mensagem, tipo) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${tipo} alert-dismissible fade show`;
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '20px';
+        alertDiv.style.right = '20px';
+        alertDiv.style.minWidth = '300px';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = mensagem +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+
+        document.body.appendChild(alertDiv);
+        setTimeout(() => alertDiv.remove(), 4000);
+    }
+</script>
+</body>
+</html>

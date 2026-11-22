@@ -7,6 +7,7 @@
 
 <main class="flex-grow-1 py-4">
     <div class="container">
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
         <div class="cliente-home-hero mb-4">
             <div>
                 <p class="cliente-home-eyebrow mb-2">Bem-vindo ao painel do cliente</p>
@@ -210,6 +211,10 @@
                                 </div>
 
                                 <div class="mt-auto d-grid gap-2">
+                                    <a class="btn btn-outline-primary"
+                                       th:href="@{/cliente/prestador/{id}(id=${prestador.id})}">
+                                        <i class="bi bi-person-lines-fill me-1"></i> Ver perfil completo
+                                    </a>
                                     <div class="d-flex gap-2">
                                         <button type="button" class="btn btn-success flex-grow-1"
                                                 th:attr="data-whatsapp=${prestador.whatsapp}" onclick="abrirWhatsApp(this)">
