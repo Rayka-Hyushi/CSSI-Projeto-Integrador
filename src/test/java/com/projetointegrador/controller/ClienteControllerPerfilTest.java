@@ -100,18 +100,22 @@ class ClienteControllerPerfilTest {
 
         assertThat(renderizar("cliente/favoritos", Map.of("favoritos", List.of(prestador))))
                 .contains("/cliente/prestador/1", "Ver perfil completo");
-
-        Map<String, Object> modelInicio = new HashMap<>();
-        modelInicio.put("prestadores", List.of(prestador));
-        modelInicio.put("totalPrestadores", 1);
-        modelInicio.put("buscaRealizada", false);
-        modelInicio.put("bairros", List.of());
-        modelInicio.put("servicos", List.of());
-        modelInicio.put("servicosSelecionados", List.of());
-        modelInicio.put("favoritosIds", List.of());
-
-        assertThat(renderizar("cliente/inicio", modelInicio))
+        assertThat(renderizar("cliente/inicio", modeloInicio(prestador)))
                 .contains("/cliente/prestador/1", "Ver perfil completo");
+    }
+
+    @Test
+    void cardsLimitamBairrosExibidos() {
+        Prestador prestador = criarPrestador(StatusAprovacao.APROVADO);
+        prestador.setBairros(List.of(criarBairro("Centro"), criarBairro("Bairro 2"), criarBairro("Bairro 3"),
+                criarBairro("Bairro 4"), criarBairro("Bairro 5")));
+
+        assertThat(renderizar("cliente/inicio", modeloInicio(prestador)))
+                .contains(">Centro<", ">Bairro 2<", ">Bairro 3<", "+2 bairros")
+                .doesNotContain(">Bairro 4<", ">Bairro 5<");
+        assertThat(renderizar("cliente/favoritos", Map.of("favoritos", List.of(prestador))))
+                .contains(">Centro<", ">Bairro 2<", ">Bairro 3<", "+2 bairros")
+                .doesNotContain(">Bairro 4<", ">Bairro 5<");
     }
 
     @Test
@@ -146,15 +150,31 @@ class ClienteControllerPerfilTest {
         veiculo.setFechado(true);
         prestador.setVeiculos(List.of(veiculo));
 
-        Bairro bairro = new Bairro();
-        bairro.setNomeBairro("Centro");
-        prestador.setBairros(List.of(bairro));
+        prestador.setBairros(List.of(criarBairro("Centro")));
 
         ServicoAdicional servico = new ServicoAdicional();
         servico.setNomeServico("Empilhadeira");
         prestador.setServicos(List.of(servico));
 
         return prestador;
+    }
+
+    private Bairro criarBairro(String nome) {
+        Bairro bairro = new Bairro();
+        bairro.setNomeBairro(nome);
+        return bairro;
+    }
+
+    private Map<String, Object> modeloInicio(Prestador prestador) {
+        Map<String, Object> model = new HashMap<>();
+        model.put("prestadores", List.of(prestador));
+        model.put("totalPrestadores", 1);
+        model.put("buscaRealizada", false);
+        model.put("bairros", List.of());
+        model.put("servicos", List.of());
+        model.put("servicosSelecionados", List.of());
+        model.put("favoritosIds", List.of());
+        return model;
     }
 
     private List<String> nomesDosCampos(Class<?> tipo) {

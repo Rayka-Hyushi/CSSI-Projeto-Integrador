@@ -56,8 +56,12 @@
                             <small class="text-muted d-block mb-2">Bairros atendidos</small>
                             <div class="d-flex flex-wrap gap-2">
                                 <span class="badge rounded-pill text-bg-light border text-dark"
-                                      th:each="bairro : ${prestador.bairros}"
+                                      th:each="bairro, status : ${prestador.bairros}"
+                                      th:if="${status.index < 3}"
                                       th:text="${bairro.nomeBairro}"></span>
+                                <span class="badge rounded-pill text-bg-secondary"
+                                      th:if="${prestador.bairros != null and #lists.size(prestador.bairros) > 3}"
+                                      th:text="${' +' + (#lists.size(prestador.bairros) - 3) + ' bairros'}"></span>
                             </div>
                         </div>
 
