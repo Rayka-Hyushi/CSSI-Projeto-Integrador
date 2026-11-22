@@ -70,7 +70,7 @@
 
         <div class="alert alert-light border small" role="alert">
             <i class="bi bi-shield-lock me-1"></i>
-            Por privacidade, dados sensíveis como CPF e CNPJ não são exibidos neste perfil.
+            Dados de acesso, como a senha, não são exibidos neste perfil.
         </div>
 
         <div class="row g-4">
@@ -83,6 +83,12 @@
                             <dd class="col-7 fw-semibold" th:text="${prestador.nomeCompleto}"></dd>
                             <dt class="col-5 text-muted">WhatsApp</dt>
                             <dd class="col-7" th:text="${prestador.whatsapp}"></dd>
+                            <dt class="col-5 text-muted">CPF</dt>
+                            <dd class="col-7" th:text="${prestador.cpf}"></dd>
+                            <th:block th:if="${prestador.cnpj != null and !#strings.isEmpty(prestador.cnpj)}">
+                                <dt class="col-5 text-muted">CNPJ</dt>
+                                <dd class="col-7" th:text="${prestador.cnpj}"></dd>
+                            </th:block>
                             <dt class="col-5 text-muted">E-mail</dt>
                             <dd class="col-7 text-break" th:text="${prestador.email}"></dd>
                             <dt class="col-5 text-muted">Situação</dt>

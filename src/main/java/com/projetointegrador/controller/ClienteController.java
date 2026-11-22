@@ -260,6 +260,8 @@ public class ClienteController {
         private final String nomeCompleto;
         private final String email;
         private final String whatsapp;
+        private final String cpf;
+        private final String cnpj;
         private final String profilePhotoUrl;
         private final boolean statusOnline;
         private final StatusAprovacao statusAprovacao;
@@ -274,6 +276,8 @@ public class ClienteController {
             this.nomeCompleto = prestador.getNomeCompleto();
             this.email = prestador.getEmail();
             this.whatsapp = prestador.getWhatsapp();
+            this.cpf = prestador.getCpf();
+            this.cnpj = prestador.getCnpj();
             this.profilePhotoUrl = prestador.getProfilePhotoUrl();
             this.statusOnline = prestador.isStatusOnline();
             this.statusAprovacao = prestador.getStatusAprovacao();
@@ -304,6 +308,14 @@ public class ClienteController {
 
         public String getWhatsapp() {
             return whatsapp;
+        }
+
+        public String getCpf() {
+            return cpf;
+        }
+
+        public String getCnpj() {
+            return cnpj;
         }
 
         public String getProfilePhotoUrl() {

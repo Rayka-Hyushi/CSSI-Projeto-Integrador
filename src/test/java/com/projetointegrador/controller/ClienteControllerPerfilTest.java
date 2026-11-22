@@ -51,7 +51,7 @@ class ClienteControllerPerfilTest {
     private ClienteController controller;
 
     @Test
-    void perfilPublicoContemDadosNaoSensiveis() {
+    void perfilPublicoContemTodosOsDadosDoPrestador() {
         when(prestadorService.buscarPorId(1L)).thenReturn(Optional.of(criarPrestador(StatusAprovacao.APROVADO)));
 
         Model model = new ExtendedModelMap();
@@ -64,6 +64,8 @@ class ClienteControllerPerfilTest {
         assertThat(perfil.getNomeCompleto()).isEqualTo("João da Silva");
         assertThat(perfil.getEmail()).isEqualTo("joao@example.com");
         assertThat(perfil.getWhatsapp()).isEqualTo("(55) 99999-9999");
+        assertThat(perfil.getCpf()).isEqualTo("000.000.000-00");
+        assertThat(perfil.getCnpj()).isEqualTo("00.000.000/0000-00");
         assertThat(perfil.getRecomendacoes()).isEqualTo(5);
         assertThat(perfil.getCreatedAt()).isEqualTo(LocalDateTime.of(2024, 1, 10, 8, 30));
         assertThat(perfil.getVeiculos()).singleElement().satisfies(veiculo -> {
@@ -74,12 +76,12 @@ class ClienteControllerPerfilTest {
         });
         assertThat(perfil.getBairros()).containsExactly("Centro");
         assertThat(perfil.getServicos()).containsExactly("Empilhadeira");
-        assertThat(nomesDosCampos(perfil.getClass())).doesNotContain("cpf", "cnpj", "senha");
+        assertThat(nomesDosCampos(perfil.getClass())).contains("cpf", "cnpj").doesNotContain("senha");
         assertThat(nomesDosCampos(perfil.getVeiculos().get(0).getClass())).doesNotContain("prestador");
     }
 
     @Test
-    void templateDoPerfilNaoExibeDadosSensiveis() {
+    void templateDoPerfilExibeCpfECnpjENaoExibeSenha() {
         when(prestadorService.buscarPorId(1L)).thenReturn(Optional.of(criarPrestador(StatusAprovacao.APROVADO)));
 
         Model model = new ExtendedModelMap();
@@ -87,8 +89,9 @@ class ClienteControllerPerfilTest {
 
         String html = renderizar("cliente/perfil-prestador", model.asMap());
 
-        assertThat(html).contains("João da Silva", "joao@example.com", "(55) 99999-9999", "ABC1D23", "Centro", "Empilhadeira");
-        assertThat(html).doesNotContain("000.000.000-00", "00.000.000/0000-00", "hash-bcrypt");
+        assertThat(html).contains("João da Silva", "joao@example.com", "(55) 99999-9999", "000.000.000-00",
+                "00.000.000/0000-00", "ABC1D23", "Centro", "Empilhadeira");
+        assertThat(html).doesNotContain("hash-bcrypt");
     }
 
     @Test
